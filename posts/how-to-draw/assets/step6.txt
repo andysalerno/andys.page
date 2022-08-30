@@ -1,0 +1,1 @@
+scripts/img2img.py --n_samples 1 --n_iter 1 --prompt "Digital fantasy painting of the Seattle city skyline. Vibrant fall trees in the foreground. Space Needle visible. Mount Rainier in background. Highly detailed." --ddim_steps 50 --seed 47004 --scale 7 --strength 0.80 --init-img C:\Users\andys\OneDrive\Pictures\inputs\step5.png

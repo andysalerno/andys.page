@@ -20,13 +20,13 @@ function closeModal() {
 // Left and right arrow keys scrub through the gallery.
 // Everything else closes the modal.
 document.onkeydown = function (e) {
-    if (e.code === 'ArrowLeft') {
+    if (e.keyCode === 37) {
         // Left arrow
         goBackPrevImage();
-    } else if (e.code === 'ArrowRight') {
+    } else if (e.keyCode === 39) {
         // Right arrow
         advanceNextImage();
-    } else if (e.code === 'Escape') {
+    } else {
         closeModal();
     }
 };

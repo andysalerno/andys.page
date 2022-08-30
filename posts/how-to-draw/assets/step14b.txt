@@ -1,0 +1,1 @@
+scripts/img2img.py --n_samples 1 --n_iter 1 --prompt Digital Matte painting. Hyper detailed. Brds fly into the horizon. Golden hour, dusk. Beautiful sky at sunset. High quality digital art. Hyper realistic. --ddim_steps 50 --seed 47407 --scale 9 --strength 0.75 --init-img C:\Users\andys\OneDrive\Pictures\inputs\step14a.png
