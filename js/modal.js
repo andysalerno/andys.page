@@ -13,8 +13,10 @@ function imgsCount() {
 
 function closeModal() {
     let modal = document.getElementById("myModal");
-    modal.style.display = "none";
-    window.location.hash = '';
+    if (modal.style.display !== "none") {
+        modal.style.display = "none";
+        window.location.hash = '';
+    }
 }
 
 // Left and right arrow keys scrub through the gallery.
