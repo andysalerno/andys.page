@@ -64,12 +64,18 @@ I should gut it of all the stuff I don&amp;rsquo;t need&amp;hellip;</description
     </item>
     
     <item>
-      <title></title>
+      <title>About</title>
       <link>https://andys.page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://andys.page/about/</guid>
-      <description>Hi I didn&amp;rsquo;t fill in the about yet.</description>
+      <description>Hi. I&amp;rsquo;m Andy Salerno.
+I&amp;rsquo;m a software developer, currently building something cool at Microsoft.*
+Things that interest me: programming languages with strong guarantees 🦀, open source, street photography, coffee.
+Reach out Email: andysalerno at gmial dotcom (fix the obvious typo in the domain)
+Github is linked in the page header.
+Twitter is here, though I&amp;rsquo;m still figuring this platform out.
+*Views in this blog are my own and don&amp;rsquo;t reflect the views of my employer, yadda yadda.</description>
     </item>
     
   </channel>
