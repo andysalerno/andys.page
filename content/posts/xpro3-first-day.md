@@ -30,4 +30,4 @@ One thing I'm not sold on yet is the optical viewfinder.  As much as I try to fo
 
 {{< image "/photogallery/large/51212379195.jpg" >}}
 
-Despite the challenges posed by 2020, it was still an interesting year to be a hobbyist street photographer, because you could document a society-wide change in behavior that, in our lifetimes, we've never seen before, and likely won't see again.  That being said, hopefully the remainder of 2021 also brings a society-wide shift back to normality at whatever pace is responsible.  Imagine the photos.
+Despite the challenges posed by 2020, it was still an interesting year to be a hobbyist street photographer, because you could document a society-wide change in behavior that, in our lifetimes, we've never seen before, and likely won't see again.  That being said, hopefully the remainder of 2021 also brings a society-wide shift back to normality at whatever pace is responsible.
