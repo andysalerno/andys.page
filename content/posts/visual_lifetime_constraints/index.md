@@ -201,7 +201,6 @@ where
 
 The above constraint `'b: 'a` says that the lifetime `'b` *outlives* the lifetime `'a`.
 
-
 -----
 
 I have a confession: I get confused by lifetimes in Rust.
@@ -241,10 +240,6 @@ fn borrow_something(s: &Foo) -> &Foo {
 }
 ```
 
-
-
-
-
 First, let me clarify what I am *not* attempting to do:
 
 * I am not attempting to create a formally correct representation of lifetimes. These visualizationas are merely a projection of my mental model, and as such they may only be correct in only a "fuzzy" sense.
@@ -280,6 +275,7 @@ fn example() {
 ```
 
 ## old section
+
 I have a confession.
 
 I get confused by lifetimes in Rust.
@@ -338,6 +334,7 @@ fn work<T: FooFactory>(factory: T) {
 ```
 
 We have:
+
 * some trait `FooFactory`
 * a function `work` that lets you pass any type by value, as long as that type is a `FooFactory`.  
 
@@ -378,6 +375,7 @@ When we send our `MyFooFactory` to another thread, how can Rust be sure that the
 Rust does this by putting a requirement on `std::thread::spawn(...)`: when you pass it your closure of type `T`, Rust requires that `T: 'static`.
 
 ## old section
+
 Both functions are generic.
 
 Both take a reference to some type `T`.
@@ -406,6 +404,7 @@ fn example() {
 The above code does not build, and you can probably figure out why - clearly `foo` does not live as long as `'static`. It is local to the `example()` function, after all.
 
 Now what about this code:
+
 ```rust
 struct Foo;
 
@@ -422,7 +421,5 @@ fn example() {
 This *does* build! Why? In this example, the `'static` constraint is on the *type*, not the *reference*. This function will happily take a non-`'static` reference.  In the first example, we didn't need to know anything about type `Foo` - there were no constraints on `T`. In this example, however, the function requires that `T` must not have any references, unless they are valid for `'static`.
 
 Since `T` is chosen to be `Foo`, and `Foo` holds no references, then `Foo` meets the constraint.
-
-
 
 *you must be this tall to ride* image
