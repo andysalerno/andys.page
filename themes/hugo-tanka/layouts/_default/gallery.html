@@ -1,0 +1,23 @@
+{{ define "main" }}
+{{ partial "header" . }}
+{{ partial "modal_definition" }}
+
+<div class="content">
+    <div class="container">
+        <div class="row justify-content-center">
+            {{ partial "content" . }}
+
+            <div class="markdown flex-container">
+
+                {{ range $index, $element := (readDir "./static/photogallery/tiny") }}
+                <a href="#{{ $index }}">
+                    <img class="gallery-image photo glowy-photo" src="/photogallery/tiny/{{ $element.Name }}">
+                </a>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ partial "footer" . }}
+{{ end }}

@@ -1,0 +1,24 @@
+<!-- The Modal -->
+<div id="myModal" class="myModal">
+    <div class="flex-row">
+        <i class=" myModal-content caption" id="modal-count">Click to view</i>
+    </div>
+    <!-- Modal Content (The Image) -->
+    <div class="flex-row img-row">
+        <div class="img-row-arrow-col">
+            <div class="flex-pusher" onclick="goBackPrevImage()"></div>
+            <div id="leftArrow" class="myModal-content caption img-row-arrow" onclick="goBackPrevImage()">&lt;</div>
+            <div class="flex-pusher" onclick="goBackPrevImage()"></div>
+        </div>
+        <img class="myModal-content" id="modal-img" onclick="advanceNextImage()">
+        <div class="img-row-arrow-col">
+            <div class="caption close-button flex-pusher" onclick="closeModal()">X</div>
+            <div class="flex-pusher-08" onclick="advanceNextImage()"></div>
+            <div id="rightArrow" class="myModal-content caption img-row-arrow" onclick="advanceNextImage()">&gt;</div>
+            <div class="flex-pusher" onclick="advanceNextImage()"></div>
+        </div>
+    </div>
+    <!-- <i class="myModal-content caption" id="modal-caption">&lt; &gt;</i> -->
+</div>
+
+<script src="/js/modal.js"></script>

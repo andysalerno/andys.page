@@ -1,0 +1,26 @@
+{{ define "main" }}
+{{ partial "header" . }}
+{{ partial "modal_definition" }}
+
+<div class="content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-lg-8">
+                {{ if .Params.showtitle | default true }}
+                <h1 class="mx-0 mx-md-4">{{ .Title }}</h1>
+                {{ end }}
+                <div class="meta-date mx-0 mx-md-4">
+                    {{ if .Params.showdate | default true }}
+                    <time>{{ .Date.Format (.Site.Params.dateform | default "2006/01/02") }}</time>
+                    {{ end }}
+                </div>
+                <div class="markdown">
+                    {{ partial "content" . }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ partial "footer" . }}
+{{ end }}
