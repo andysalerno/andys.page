@@ -69,13 +69,37 @@ Rust keeps track of every object's lifetime for us.
 
 The golden rule that Rust enforces for us is: you can borrow something, but you must finish using it *before* its lifetime ends.
 
-Much of the time, we can simply forget about the lifetimes of our borrows. Rust is very smart, and can enforce the golden rule without any extra work needed on the developer's part.
+Much of the time, when we borrow something, we can simply ignore its lifetime. Rust is very smart, and can enforce the golden rule without any extra work needed on the developer's part.
 
-> Note: the Rust docs avoid the term "object", and use "variable" instead. For my purposes, I believe "object" is more intuitive, so I use it here.
+Imagine a function that takes a string of multiple words as input, and returns just the first word as output:
 
-### Section notes
+```rust
+// example input: "hello, world!"
+//  gives output: "hello,"
+fn first_word_only(s: &str) -> ??? {
+    ???
+}
+```
 
-- The Rust docs to not use the term "object". It prefers "variable".
+How could we implement the above?
+
+You could look at the input string slice, `s`, find the first word, copy it into a new `String`, and return that `String`.
+
+Since we've copied the data, this output `String` can outlive the input `&str`. They are entirely separate.
+
+But what if we wanted to avoid the copy? After all, "hello, world!" already contains the exact correct output, "hello,".
+
+The above function takes a `str` by reference (or, "borrows a str", if you like).
+
+> Note: *borrow* and *reference* will sometimes be used interchangeably here.
+
+When a function is over, object created on its stack dies (or, "their lifetimes end").
+
+It splits on whitespace, then returns just the first of all the splits.
+
+But notice an important detail: we are returning a reference, `&str`. A reference points to existing data.
+
+> Note: the Rust docs mostly avoid the term "object", and use "variable" instead. For my purposes, I believe "object" is more intuitive, so I use it here.
 
 ## Part 1b
 
