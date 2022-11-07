@@ -4,6 +4,27 @@ date: 2022-11-05T20:35:43-07:00
 draft: true
 ---
 
+Like most Rust developers, my understanding of lifetime syntax comes from two sources:
+
+1. The official documentation, which offers extremely helpful and precise details, and
+1. Compiler errors, which show me any lifetime violations in a (usually) clear and obvious way.
+
+Both these sources are extremely powerful. In fact, I'd go so far to say that Rust as a language would never have succeeded were it not for the docs and the amazing compiler errors.  The borrow checker is a totally novel concept to most developers, so without understandable build errors (*cough* c++ *cough*) I think the learning curve would have simply been too steep for most. It's a huge testament to the quality of the Rust team that they understood this and prioritized clear error messages so highly.
+
+But... there's a "but" here.  To me, something is still missing. There's a big gap between 1 and 2 in my above list.
+
+"1" gives us the technical, detailed, factual information about lifetimes and their syntax. You read the docs, some of it sticks, and you gain the foundations of a mental model.
+
+"2" gives us in-the-moment feedback about our mistakes.  You write code, and as you write it, the mental model from 1 becomes a little stronger over time.
+
+However, I hit a ceiling when using *only* the docs and *only* the compiler (and occasionally StackOverflow).
+
+I am reminded of high school calculus. I read the book. I read the rules. I memorized the formulas. I took the tests. I passed them.
+
+But I did not learn calculus. I did not actually *know* it. Some might say I did not *grok* it, but for some reason that word has always tasted horrible to me.
+
+================
+
 Consider the following two functions:
 
 ```rust
