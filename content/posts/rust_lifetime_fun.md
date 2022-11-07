@@ -47,7 +47,7 @@ fn question_1<T: 'static>(thing: &T) { ... }
 
 ### Question 2
 
-Can you spot the error in the following function? What must be changed to fix it?
+Can you spot the error in the following function? What are some ways you might fix it?
 
 ```rust
 fn question_2<T: Send + Sync>(obj: T) {
@@ -57,7 +57,27 @@ fn question_2<T: Send + Sync>(obj: T) {
 }
 ```
 
-## Part 1
+## Part 1a
+
+A "lifetime" is how long an object is alive.
+
+When an object is alive, it is safe to access it. When its lifetime is over, the object is no longer safe to access.
+
+Rust keeps track of every object's lifetime for us.
+
+*Every* time you borrow something (the `&` symbol), there is a lifetime automatically associated with that borrow. Every time.
+
+The golden rule that Rust enforces for us is: you can borrow something, but you must finish using it *before* its lifetime ends.
+
+Much of the time, we can simply forget about the lifetimes of our borrows. Rust is very smart, and can enforce the golden rule without any extra work needed on the developer's part.
+
+> Note: the Rust docs avoid the term "object", and use "variable" instead. For my purposes, I believe "object" is more intuitive, so I use it here.
+
+### Section notes
+
+- The Rust docs to not use the term "object". It prefers "variable".
+
+## Part 1b
 
 Say you have a function.
 
@@ -65,9 +85,9 @@ Say you have a function.
 fn abc<T: ToString>(i: T) { ... }
 ```
 
-You would say: the function `abc` takes in a parameter `x`. `x` can be anything that implements `ToString`.
+You would say: the function `abc` takes in a parameter `i`. `i` can be anything that implements `ToString`.
 
-The value of `T` is therefore decided by argument provided by the caller.
+The value of `T` is therefore decided by the argument, provided by the caller.
 
 Say you have a function.
 
@@ -77,9 +97,23 @@ fn xyz<T: ToString>(i: T) -> T { ... }
 
 Now `T` appears in three places. From left to right:
 
-1. The generic parameters (inside `<...>`)
-1. The parameter list
-1. The return type
+1. The generic parameters (inside `<...>`).
+1. The parameter list.
+1. The return type.
+
+Once again, the value of `T` is dictated by the caller, based on what type they provide for parameter `i`:
+
+```rust
+let i = 42;
+let j = xyz(i);
+```
+
+And yes, this could be specified using the turbofish syntax, if the caller wishes:
+
+```rust
+let i = 42;
+let j = xyz::<i32>(i);
+```
 
 ================
 
