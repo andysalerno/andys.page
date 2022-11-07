@@ -15,13 +15,71 @@ But... there's a "but" here.  To me, something is still missing. There's a big g
 
 "1" gives us the technical, detailed, factual information about lifetimes and their syntax. You read the docs, some of it sticks, and you gain the foundations of a mental model.
 
-"2" gives us in-the-moment feedback about our mistakes.  You write code, and as you write it, the mental model from 1 becomes a little stronger over time.
+"2" gives us in-the-moment feedback about our mistakes.  You write code, and as you write it, the compiler checks your work, and the mental model from 1 becomes a little stronger over time.
 
 However, I hit a ceiling when using *only* the docs and *only* the compiler (and occasionally StackOverflow).
 
-I am reminded of high school calculus. I read the book. I read the rules. I memorized the formulas. I took the tests. I passed them.
+I am reminded of high school calculus: I read the book; I read the rules; I memorized the formulas; I took the tests; I passed them.
 
 But I did not learn calculus. I did not actually *know* it. Some might say I did not *grok* it, but for some reason that word has always tasted horrible to me.
+
+Then I read the opening few chapters of the famous [Calculus Made Easy](https://en.wikipedia.org/wiki/Calculus_Made_Easy). And it was like a switch flipped. There it was! All the disparate rules and formulas I had memorized suddenly came together into a beautiful mental model.
+
+Was calculus suddenly easy for me? No. But there was a difference. Before, I was stubbornly cutting steak with a butter knife. Now I finally had the right tools.
+
+I want something similar for Rust lifetimes. I want an explanation that doesn't just tell me *what the facts are*, but also tells me *how to think about them.*
+
+Will this post, this one you are reading right now, be that? I don't know. But I can try!
+
+## Who is this for?
+
+This is for experienced developers new to Rust, and for existing Rust developers who (like myself) may be desiring a stronger foundation regarding lifetimes.
+
+### Question 1
+
+Can you explain the difference between the following two functions?
+
+```rust
+fn question_1<T>(thing: &'static T) { ... }
+
+fn question_1<T: 'static>(thing: &T) { ... }
+```
+
+### Question 2
+
+Can you spot the error in the following function? What must be changed to fix it?
+
+```rust
+fn question_2<T: Send + Sync>(obj: T) {
+    thread::spawn(move || {
+        do_something(obj);
+    });
+}
+```
+
+## Part 1
+
+Say you have a function.
+
+```rust
+fn abc<T: ToString>(i: T) { ... }
+```
+
+You would say: the function `abc` takes in a parameter `x`. `x` can be anything that implements `ToString`.
+
+The value of `T` is therefore decided by argument provided by the caller.
+
+Say you have a function.
+
+```rust
+fn xyz<T: ToString>(i: T) -> T { ... }
+```
+
+Now `T` appears in three places. From left to right:
+
+1. The generic parameters (inside `<...>`)
+1. The parameter list
+1. The return type
 
 ================
 
