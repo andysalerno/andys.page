@@ -112,9 +112,9 @@ It cannot be a `Bar` that is created within the scope of the function `example_1
 
 If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing bar when it is called.
 
-So where could that `Bar` possibly come from?
+So how could it possibly find that `Bar`?
 
-Well, the function only has one input: the vector of `Foo`s.  That is the only data this function knows about.
+Well, the only thing a function knows about is what you pass into it.
 
 Therefore, it *must* be the case that the returned reference to `Bar` is somehow under the ownership of the vector of `Foo`s.
 
@@ -130,6 +130,15 @@ We could read the above function as:
 
 * There is an input, which is a reference to a vector. Like all things, the vector has a lifetime. We label it `'a`.
 * There is an output, which is a reference to a Bar. That reference is only valid during `'a`.
+
+I told a little white lie earlier - I said:
+
+> Well, the only thing a function knows about is what you pass into it.
+
+Maybe you caught the lie. A function actually knows about *two* things:
+
+1. Data you pass to it as arguments
+1. Data that is globally available, marked `const` or `static`
 
 ## Part ???
 
