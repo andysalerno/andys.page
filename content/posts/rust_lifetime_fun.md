@@ -4,6 +4,9 @@ date: 2022-11-05T20:35:43-07:00
 draft: true
 ---
 
+
+================================
+
 Like most Rust developers, my understanding of lifetime syntax comes from two sources:
 
 1. The official documentation, which offers extremely helpful and precise details, and
@@ -57,7 +60,19 @@ fn question_2<T: Send + Sync>(obj: T) {
 }
 ```
 
-## Part 1a
+### Question 3
+
+Consider the following trait. One or more function(s) defined by the trait will cause a build error. Can you identify which one(s), and explain why?
+
+```rust
+trait Example {
+    fn a(s: &str) -> &str;
+    fn b(x: &str, y: &str) -> &str;
+    fn c(&self, x: &str, y: &str) -> &str;
+}
+```
+
+## Part 1: Back to Basics
 
 A "lifetime" is how long an object is alive.
 
@@ -69,7 +84,54 @@ Rust keeps track of every object's lifetime for us.
 
 The golden rule that Rust enforces for us is: you can borrow something, but you must finish using it *before* its lifetime ends.
 
-Much of the time, when we borrow something, we can simply ignore its lifetime. Rust is very smart, and can enforce the golden rule without any extra work needed on the developer's part.
+Much of the time, when we borrow something, we can simply ignore its lifetime. Rust is very smart, and can sometimes enforce the golden rule without any extra work needed on the developer's part.
+
+But in cases where the compiler cannot be sure - or cases that are simply ambiguous - we must tell the compiler our intentions. That is where lifetime syntax comes in.
+
+Say you have a function.
+
+```rust
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    ...
+}
+```
+
+Inspect the above function. Consider its input. Consider its output.
+
+Don't worry about what a `Foo` is. Don't worry about what a `Bar` is.
+
+What do we know, with absolute certainty, about the output?
+
+Well, we know it is a reference, because of the `&`.
+
+We know the reference *must* point to a valid `Bar` somewhere.
+
+Consider where that `Bar` must be.
+
+It cannot be a `Bar` that is created within the scope of the function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. Therefore, this must be a *pre-existing* `Bar`.
+
+If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing bar when it is called.
+
+So where could that `Bar` possibly come from?
+
+Well, the function only has one input: the vector of `Foo`s.  That is the only data this function knows about.
+
+Therefore, it *must* be the case that the returned reference to `Bar` is somehow under the ownership of the vector of `Foo`s.
+
+Or, in lifetime-speak:
+
+```rust
+fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
+    ...
+}
+```
+
+We could read the above function as:
+
+* There is an input, which is a reference to a vector. Like all things, the vector has a lifetime. We label it `'a`.
+* There is an output, which is a reference to a Bar. That reference is only valid during `'a`.
+
+## Part ???
 
 Imagine a function that takes a string of multiple words as input, and returns just the first word as output:
 
@@ -100,6 +162,10 @@ It splits on whitespace, then returns just the first of all the splits.
 But notice an important detail: we are returning a reference, `&str`. A reference points to existing data.
 
 > Note: the Rust docs mostly avoid the term "object", and use "variable" instead. For my purposes, I believe "object" is more intuitive, so I use it here.
+
+## Part 1a
+
+Lifetime syntax can be confusing, because named lifetimes can appear in different parts of a function declaration - and these different parts have different meanings.
 
 ## Part 1b
 
@@ -180,8 +246,8 @@ fn work<T: FooFactory>(factory: T) {
 
 We have:
 
-- some trait `FooFactory`
-- a function `work` that lets you pass any type by value, as long as that type is a `FooFactory`.  
+* some trait `FooFactory`
+* a function `work` that lets you pass any type by value, as long as that type is a `FooFactory`.  
 
 Let's say we want to update `work` so that it executes in another thread:
 
