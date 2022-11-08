@@ -131,6 +131,12 @@ We could read the above function as:
 * There is an input, which is a reference to a vector. Like all things, the vector has a lifetime. We label it `'a`.
 * There is an output, which is a reference to a Bar. That reference is only valid during `'a`.
 
+Rust will allow you to write that function without include any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
+
+But I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
+
+## Part 2: Laying the bricks
+
 I told a little white lie earlier - I said:
 
 > Well, the only thing a function knows about is what you pass into it.
@@ -139,6 +145,24 @@ Maybe you caught the lie. A function actually knows about *two* things:
 
 1. Data you pass to it as arguments
 1. Data that is globally available, marked `const` or `static`
+
+Returning to the same function, this could be a valid implementation:
+
+```rust
+const GLOBAL_BAR: Bar = Bar;
+
+fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
+    &GLOBAL_BAR
+}
+```
+
+Look, we're returning a valid reference to a `Bar`, and we're not even using the input `Foo` vec at all!
+
+Let's generalize what we learned earlier, to capture this case:
+
+We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive the entire time the vec of `Foo`s is alive**.
+
+A `Bar` that is constant/static passes that condition - it is alive the entire duration of the program, which obvious encompasses the lifetime of the vec of `Foo`s.
 
 ## Part ???
 
