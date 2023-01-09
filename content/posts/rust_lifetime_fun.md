@@ -9,8 +9,8 @@ draft: true
 
 Like most Rust developers, my understanding of lifetime syntax comes from two sources:
 
-1. The official documentation, which offers extremely helpful and precise details, and
-1. Compiler errors, which show me any lifetime violations in a (usually) clear and obvious way.
+1. The official documentation, which offers ~~extremely~~ helpful and precise details, and
+1. Compiler errors, which show me any lifetime violations in a (usually) clear and understandable way.
 
 Both these sources are extremely powerful. In fact, I'd go so far to say that Rust as a language would never have succeeded were it not for the docs and the amazing compiler errors.  The borrow checker is a totally novel concept to most developers, so without understandable build errors (*cough* c++ *cough*) I think the learning curve would have simply been too steep for most. It's a huge testament to the quality of the Rust team that they understood this and prioritized clear error messages so highly.
 
