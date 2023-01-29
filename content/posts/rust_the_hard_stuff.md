@@ -4,6 +4,16 @@ date: 2023-01-08T14:52:22-08:00
 draft: true
 ---
 
+This document is broken down into parts:
+
+**Part 1**, wherein we describe lifetimes from first principles.
+
+**Part 2**, wherein we consider how to mentally represent lifetimes.
+
+The intended audience for this document is a programmer who has some experience with Rust, and has a basic understanding of lifetimes, but who finds it difficult to *think about* lifetimes and gets confused by their syntax.
+
+## Part 1: First Principles
+
 Say you have a function.
 
 ```rust
@@ -36,7 +46,24 @@ Well, the only data a function knows about are what you pass into it.
 
 The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
 
-Or, in lifetime-speak:
+If the `Vec<Foo>` is letting us borrow a `Bar`, then we could assume the `Vec<Foo>` is the "owner" of some `Bar`.
+
+But what happens when the `Vec<Foo>` is destroyed? Everything it owns, including the `Bar`, will also be destroyed.
+
+Backing up a moment. Imagine you are the caller of `example_1`. Immediately after `example_1` returns, you certainly have two things in scope:
+
+- The `&Bar` that was just returned.
+- The `&Vec<Foo>` that you passed in when you called `example_1`.
+
+Consider the relationship between these two values.
+
+You may not see this visually in your code editor, but those two values are connected somehow. You might say these two values are **entangled** (*not official terminology, I just like that word*). There is some relationship between them.
+
+The relationship is this: The reference `&Bar` depends on `Vec<Foo>` existing. If the `Vec<Foo>` ceases to exist, our `&Bar` is no longer valid.
+
+And here we finally introduce the lifetime syntax. Rust must allow us to represent this relationship somehow.
+
+In lifetime-speak:
 
 ```rust
 fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
@@ -46,20 +73,20 @@ fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
 
 We could read the above function as:
 
-* There is an input, which is a reference to a `Vec`. Like all things, the `Vec` has a lifetime. We label it `'a`.
-* There is an output, which is a reference to a `Bar`. That reference is only valid during `'a`.
+- There is an input, which is a reference to a `Vec`. Like all things, the `&Vec` has a lifetime. We label it `'a`.
+- There is an output, which is a reference to a `Bar`. That reference is only valid during `'a`.
 
 Rust will allow you to write that function without including any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
 
 Notice the above code mentions the lifetime `'a` three times. It can be confusing for new Rust developers to understand why, and what each instance means. I describe them as such:
 
-* `fn example_1<'a>` means: "this is a function that is generic over some lifetime, which will be determined by the caller somehow."
-* `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
-* `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
+- `fn example_1<'a>` means: "this is a function that is generic over some lifetime, which will be determined by the caller somehow."
+- `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
+- `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
 
-I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
+This is, admittedly, the simplest possible scenario. But I hope there was a *click* in your mind.
 
-## Part 2: Laying the bricks
+### Part 1 (cont): Delving deeper
 
 I lied earlier - I said:
 
@@ -88,7 +115,7 @@ Let's generalize what we learned earlier, to capture this case:
 
 We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive at the time the function is called.** And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
 
-## Part 3: More lies
+### Part 1 (cont): More lies
 
 Hold on.
 
@@ -140,14 +167,14 @@ Many programmers are drawn to Rust with an enticing promise:
 
 *The learning curve will be steep -- but surmount it, and you will find yourself in **memory safety Nirvana!***
 
-So those brave Rust beginners 
+So those brave Rust beginners
 
 Let's talk about object-oriented programming for a second.
 
 Object-oriented programming was successful because it's easy to reason about.  In fact, it perfectly matches the *natural* way we think. The world is full of "things". And "things" can do "actions". A `Dog` can `.bark()`. A `Vehicle` can `.travel()`. A `Bike` **is a** `Vehicle`, therefore it can `.travel()`. And "things" have state. The `Bike.color` can be `Color::Red`. And so on.
 
 // Back to lifetimes. Lifetimes... do not really match intuitively with any other model we encounter day-to-day.
-// Need to mention: https://blog.adamant-lang.org/2019/rust-lifetime-visualization-ideas/
+// Need to mention: <https://blog.adamant-lang.org/2019/rust-lifetime-visualization-ideas/>
 
 Back to lifetimes. Lifetimes... are difficult to model in our minds. They are hard to reason about, harder to explain, hardest to abstractly represent. They are closer to mathematical proofs than they are to anything in the "natural world".
 
@@ -218,11 +245,11 @@ If we have a diagram that looks like this:
 
 We would say:
 
-* `'static` is, as always, the topmost lifetime, encompassing all others.
-* `'blue` ends during `'static`.
-* `'red` ends during `'blue`.
-* `'green` ends during `'static`.
-* No relationship between `'blue` and `'green` is established, even if one does exist.
+- `'static` is, as always, the topmost lifetime, encompassing all others.
+- `'blue` ends during `'static`.
+- `'red` ends during `'blue`.
+- `'green` ends during `'static`.
+- No relationship between `'blue` and `'green` is established, even if one does exist.
 
 It should be intuitive that *all the data that exists during `'blue` also exists during `'red`.*
 
@@ -259,9 +286,9 @@ I have added objects `x`, `y`, and `z`:
 
 After inspecting the above diagram, we would say:
 
-* `x` lives the entire duration of `'static`, so it is accessible during all lifetimes encompassed within `'static`: `'static, 'blue, 'red, 'green`
-* `y` lives the entire duration of `'blue`, so it is accessible during all lifetimes encompassed within `'blue`: `'blue, 'red`
-* `z` lives the entire duration of `'red`, so it is accessible during all lifetimes encompassed within `'red`: `'red`
+- `x` lives the entire duration of `'static`, so it is accessible during all lifetimes encompassed within `'static`: `'static, 'blue, 'red, 'green`
+- `y` lives the entire duration of `'blue`, so it is accessible during all lifetimes encompassed within `'blue`: `'blue, 'red`
+- `z` lives the entire duration of `'red`, so it is accessible during all lifetimes encompassed within `'red`: `'red`
 
 So far, I hope this seems intuitive.
 
@@ -305,7 +332,7 @@ fn example<'a>(input: &'a Foo) -> &'a Bar {
 └─────────────────────────────────────────────────────┘
 ```
 
-Remember, in `example<'a>()`, `'a` is essentially a generic value. It gets replaced with the "real" lifetime when we call it. 
+Remember, in `example<'a>()`, `'a` is essentially a generic value. It gets replaced with the "real" lifetime when we call it.
 
 Since we are calling it with argument `&y`, the generic `'a` is replaced with the lifetime of `y`, which we are calling `'blue`.
 
