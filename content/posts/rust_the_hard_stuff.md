@@ -4,19 +4,46 @@ date: 2023-01-08T14:52:22-08:00
 draft: true
 ---
 
-Several years into my journey as a Rust hobbyist, I realized something:
+Many programmers are drawn to Rust with an enticing promise:
 
-I have a big problem with how lifetimes are taught.
+*The learning curve will be steep -- but surmount it, and you will find yourself in **memory safety Nirvana!***
 
-All the documentation around lifetimes is factual. But I don't think it helps construct a useful mental model. At least, it didn't for me.
+So those brave Rust beginners 
 
-My mental model, which has become mostly reliable, looks nothing like the more traditional description of lifetimes.
+Let's talk about object-oriented programming for a second.
+
+Object-oriented programming was successful because it's easy to reason about.  In fact, it perfectly matches the *natural* way we think. The world is full of "things". And "things" can do "actions". A `Dog` can `.bark()`. A `Vehicle` can `.travel()`. A `Bike` **is a** `Vehicle`, therefore it can `.travel()`. And "things" have state. The `Bike.color` can be `Color::Red`. And so on.
+
+// Back to lifetimes. Lifetimes... do not really match intuitively with any other model we encounter day-to-day.
+// Need to mention: https://blog.adamant-lang.org/2019/rust-lifetime-visualization-ideas/
+
+Back to lifetimes. Lifetimes... are difficult to model in our minds. They are hard to reason about, harder to explain, hardest to abstractly represent. They are closer to mathematical proofs than they are to anything in the "natural world".
+
+> Intrusive thought: "You can't compare lifetimes with OOP! Those solve entirely different problems!"
+>
+> I'm not comparing *what they do*, I am comparing *how we think about them*.
+
+Rust, as a language, does not really do anything to make lifetimes *easier*. All it does is require your lifetimes to be *correct.*
+
+The documentation does a wonderful job explaining what lifetimes are, what their rules are, and how they work.
+
+It does not do a particularly good job in showing you how to think about them.
+
+At this point, I ask you: when you look at the following code, how does your mind represent it? What shapes, structures, colors, or patterns do you see? How would you draw it abstractly?
+
+```rust
+fn example(input: &Foo) -> &Bar {
+    ...
+}
+```
+
+Obviously, I cannot answer for you. But I can share my answer, and hope it helps someone -- or better yet, learn from the answers of others.
 
 In this article, I will try to explain lifetimes *as I understand them*, with some (rather crudely done) illustrations.
 
 As the saying goes, "All models are wrong, but some are useful."
 
-My goal here is not to teach you all the hard facts of lifetimes, but rather *how I think* about lifetimes.
+It is *wrong* to think of lifetimes as scopes. But it is *useful* to think of lifetimes as scopes.
 
 ## From the top
 
@@ -37,6 +64,8 @@ In Rust, we frequently define lifetimes in terms of other lifetimes. This means 
 
 Since `'static` is the topmost lifetime, you can therefore think of it as the root, in which all other lifetimes will live.
 
+Inspect the above function. Consider its input. Consider its output.
+
 If we have a diagram that looks like this:
 
 ```goat
@@ -45,10 +74,10 @@ If we have a diagram that looks like this:
 │ 'static                                             │
 │                                                     │
 │   ┌──────────────────────┐ ┌──────────────────────┐ │
-│   │ 'a                   │ │ 'c                   │ │
+│   │ 'blue                │ │ 'green               │ │
 │   │                      │ │                      │ │
 │   │  ┌─────────────────┐ │ │                      │ │
-│   │  │ 'b              │ │ │                      │ │
+│   │  │ 'red            │ │ │                      │ │
 │   │  │                 │ │ │                      │ │
 │   │  │                 │ │ │                      │ │
 │   │  └─────────────────┘ │ │                      │ │
@@ -60,10 +89,16 @@ If we have a diagram that looks like this:
 We would say:
 
 * `'static` is, as always, the topmost lifetime, encompassing all others.
-* `'a` ends during `'static`.
-* `'b` ends during `'a`.
-* `'c` ends during `'static`.
-* No relationship between `'a` and `'c` is established, even if one does exist.
+* `'blue` ends during `'static`.
+* `'red` ends during `'blue`.
+* `'green` ends during `'static`.
+* No relationship between `'blue` and `'green` is established, even if one does exist.
+
+It should be intuitive that *all the data that exists during `'blue` also exists during `'red`.*
+
+It should be intuitive that *during `'blue`, we can't assume that data from `'red` is still alive.*
+
+---
 
 Now let's imagine we have some objects that exist within these defined lifetimes.
 
@@ -77,12 +112,12 @@ I have added objects `x`, `y`, and `z`:
 │   let x = Foo;                                      │
 │                                                     │
 │   ┌──────────────────────┐ ┌──────────────────────┐ │
-│   │ 'a                   │ │ 'c                   │ │
+│   │ 'blue                │ │ 'green               │ │
 │   │                      │ │                      │ │
 │   │   let y = Foo;       │ │                      │ │
 │   │                      │ │                      │ │
 │   │  ┌─────────────────┐ │ │                      │ │
-│   │  │ 'b              │ │ │                      │ │
+│   │  │ 'red            │ │ │                      │ │
 │   │  │                 │ │ │                      │ │
 │   │  │    let z = Foo; │ │ │                      │ │
 │   │  │                 │ │ │                      │ │
@@ -94,13 +129,13 @@ I have added objects `x`, `y`, and `z`:
 
 After inspecting the above diagram, we would say:
 
-* `x` lives the entire duration of `'static`, so it is accessible during all lifetimes encompassed within `'static`: `'static, 'a, 'b, 'c`
-* `y` lives the entire duration of `'a`, so it is accessible during all lifetimes encompassed within `'a`: `'a, 'b`
-* `z` lives the entire duration of `'b`, so it is accessible during all lifetimes encompassed within `'b`: `'b`
+* `x` lives the entire duration of `'static`, so it is accessible during all lifetimes encompassed within `'static`: `'static, 'blue, 'red, 'green`
+* `y` lives the entire duration of `'blue`, so it is accessible during all lifetimes encompassed within `'blue`: `'blue, 'red`
+* `z` lives the entire duration of `'red`, so it is accessible during all lifetimes encompassed within `'red`: `'red`
 
 So far, I hope this seems intuitive.
 
-Let's add some code into the mix. Say we have a function which takes a `&Foo` as input and returns a `&Bar` as output. Don't worry about what a `Foo` is or what a `Bar` is.
+Let's bring back our code from earlier. Say we have a function which takes a `&Foo` as input and returns a `&Bar` as output. Don't worry about what a `Foo` is or what a `Bar` is.
 
 ```rust
 fn example(input: &Foo) -> &Bar {
@@ -122,27 +157,29 @@ fn example<'a>(input: &'a Foo) -> &'a Bar {
 │ 'static                                             │
 │                                                     │
 │   ┌──────────────────────────────────────────────┐  │
-│   │ '1                                           │  │
+│   │ 'blue                                        │  │
 │   │                                              │  │
 │   │   let y = Foo;                               │  │
 │   │                                              │  │
-│   │   example<'1>(&y) {                          │  │
+│   │   example<'blue>(&'blue y) {                 │  │
 │   │    ┌─────────────────┐                       │  │
-│   │    │ '2              │                       │  │
+│   │    │ 'red            │                       │  │
 │   │    │                 │                       │  │
-│   │    │                 │                       │  │
+│   │    │  [black box]    │                       │  │
 │   │    │                 │                       │  │
 │   │    └─────────────────┘                       │  │
-│   │  }  --> &'1 Bar                              │  │
+│   │  }  --> &'blue Bar                           │  │
 │   │                                              │  │
 │   └──────────────────────────────────────────────┘  │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
 
-Let's say we have a function which takes a `&Foo` as input and returns a `&Bar` as output. Don't worry about what a `Foo` is or what a `Bar` is.
+Remember, in `example<'a>()`, `'a` is essentially a generic value. It gets replaced with the "real" lifetime when we call it. 
 
-First, let's intentionally implement this incorrectly, to sho
+Since we are calling it with argument `&y`, the generic `'a` is replaced with the lifetime of `y`, which we are calling `'blue`.
+
+If the compiler is ever unable to decide between lifetime `'purple` and lifetime `'orange`, it will always be pessimistic and pick the *shortest* one, because it must handle the worst-case scenario.
 
 ## Part 1: Back to Basics
 
