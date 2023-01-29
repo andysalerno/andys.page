@@ -57,7 +57,7 @@ Notice the above code mentions the lifetime `'a` three times. It can be confusin
 * `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
 * `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
 
-But I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
+I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
 
 ## Part 2: Laying the bricks
 
@@ -82,9 +82,11 @@ fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
 
 Look, we're returning a valid reference to a `Bar`, and we're not even using the input `Foo` at all!
 
+Since `&GLOBAL_BAR` is `'static`, and `'static` is the topmost lifetime which encompasses all other lifetimes (including `'a`), this means it is also a valid source for our `&Bar`.
+
 Let's generalize what we learned earlier, to capture this case:
 
-We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive at the time the function is called.**. And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
+We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive at the time the function is called.** And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
 
 ## Part 3: More lies
 
@@ -102,14 +104,9 @@ Consider the following code, which does **not** compile:
 const GLOBAL_BAR: Bar = Bar;
 
 fn main() {
-    let x;
+    let ref_to_global_bar = example_1(&Vec::new());
 
-    {
-        let f = Vec::new();
-        x = example_1(&f);
-    }
-
-    println!("Found it: {:?}", x);
+    println!("Found it: {:?}", ref_to_global_bar);
 }
 
 fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
