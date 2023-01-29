@@ -4,6 +4,129 @@ date: 2023-01-08T14:52:22-08:00
 draft: true
 ---
 
+Say you have a function.
+
+```rust
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    ...
+}
+```
+
+Inspect the above function. Consider its input. Consider its output.
+
+Don't worry about what a `Foo` is. Don't worry about what a `Bar` is.
+
+What do we know, with absolute certainty, about the output?
+
+Well, we know it is a reference, because of the `&`.
+
+> **NOTE:** this document will use "reference" and "borrow" interchangeably.
+
+We know the reference *must* point to a valid `Bar` somewhere.
+
+Consider where that `Bar` must be.
+
+It cannot be a `Bar` that is created within the scope of the function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. We can't return a reference to a destroyed `Bar`. Therefore, this must be a *pre-existing* `Bar`.
+
+If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing `Bar` when it is called.
+
+So where could it possibly find that `Bar`?
+
+Well, the only data a function knows about are what you pass into it.
+
+The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
+
+Or, in lifetime-speak:
+
+```rust
+fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
+    ...
+}
+```
+
+We could read the above function as:
+
+* There is an input, which is a reference to a `Vec`. Like all things, the `Vec` has a lifetime. We label it `'a`.
+* There is an output, which is a reference to a `Bar`. That reference is only valid during `'a`.
+
+Rust will allow you to write that function without including any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
+
+Notice the above code mentions the lifetime `'a` three times. It can be confusing for new Rust developers to understand why, and what each instance means. I describe them as such:
+
+* `fn example_1<'a>` means: "this is a function that is generic over some lifetime, which will be determined by the caller somehow."
+* `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
+* `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
+
+But I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
+
+## Part 2: Laying the bricks
+
+I lied earlier - I said:
+
+> Well, the only thing a function knows about is what you pass into it.
+
+Maybe you caught the lie. A function actually knows about *two* things:
+
+1. Data you pass to it as arguments
+1. Data that is globally available, marked `const` or `static`
+
+Returning to the same function, this could be a valid implementation:
+
+```rust
+const GLOBAL_BAR: Bar = Bar;
+
+fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
+    &GLOBAL_BAR
+}
+```
+
+Look, we're returning a valid reference to a `Bar`, and we're not even using the input `Foo` at all!
+
+Let's generalize what we learned earlier, to capture this case:
+
+We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive at the time the function is called.**. And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
+
+## Part 3: More lies
+
+Hold on.
+
+Something is still not right. Let me repeat that last part:
+
+> And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
+
+There is yet another adjustment we need to make to our understanding.
+
+Consider the following code:
+
+```rust
+const GLOBAL_BAR: Bar = Bar;
+
+fn main() {
+    let x;
+
+    {
+        let f = Vec::new();
+        x = example_1(&f);
+    }
+
+    println!("Found it: {:?}", x);
+}
+
+fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
+    &GLOBAL_BAR
+}
+```
+
+I bet you can figure out pretty quickly which part is wrong.
+
+But let me ask you -- *why* is it wrong?
+
+The distinction may seem subtle. Rust does not actually care *who* owns the data. It could be the `Vec<Foo>`. It could be something static.
+
+A `Bar` that is constant/static passes that condition - it is alive the entire duration of the program, which obvious encompasses the lifetime of the vec of `Foo`s.
+
+# Part 2
+
 Many programmers are drawn to Rust with an enticing promise:
 
 *The learning curve will be steep -- but surmount it, and you will find yourself in **memory safety Nirvana!***
@@ -64,8 +187,6 @@ In Rust, we frequently define lifetimes in terms of other lifetimes. This means 
 
 Since `'static` is the topmost lifetime, you can therefore think of it as the root, in which all other lifetimes will live.
 
-Inspect the above function. Consider its input. Consider its output.
-
 If we have a diagram that looks like this:
 
 ```goat
@@ -96,7 +217,7 @@ We would say:
 
 It should be intuitive that *all the data that exists during `'blue` also exists during `'red`.*
 
-It should be intuitive that *during `'blue`, we can't assume that data from `'red` is still alive.*
+It should be intuitive that *during `'blue`, we can't assume that data from `'red` still exists.*
 
 ---
 
@@ -181,102 +302,22 @@ Since we are calling it with argument `&y`, the generic `'a` is replaced with th
 
 If the compiler is ever unable to decide between lifetime `'purple` and lifetime `'orange`, it will always be pessimistic and pick the *shortest* one, because it must handle the worst-case scenario.
 
-## Part 1: Back to Basics
+## Pop quiz
 
-A "lifetime" is how long an object is alive.
+Question 1.
 
-When an object is alive, it can be accessed. When its lifetime is over, the object is no longer safe to access because it may no longer exist.
+I have a Rust function that returns a reference.
 
-Rust keeps track of every object's lifetime for us.
+The function takes no parameters.
 
-*Every* time you borrow something (the `&` symbol), there is a lifetime automatically associated with that borrow. Every time.
+What's the lifetime of the reference it returns?
 
-<!-- The golden rule that Rust enforces for us is: you can borrow something, but you must finish using it *before* its lifetime ends.
+> Hint: if we are returning a reference to data, that data must already exist somewhere.
 
-Much of the time, when we borrow something, we can simply ignore its lifetime. Rust is very clever, and can usually enforce the golden rule without any extra work needed on the developer's part.
-
-But in cases where the compiler cannot be sure - or cases that are simply ambiguous - we must tell the compiler our intentions. That is where lifetime syntax comes in. -->
-
-Say you have a function.
+Answer: it must be `'static`:
 
 ```rust
-fn example_1(input: &Vec<Foo>) -> &Bar {
+fn example() -> &'static Foo {
     ...
 }
 ```
-
-Inspect the above function. Consider its input. Consider its output.
-
-Don't worry about what a `Foo` is. Don't worry about what a `Bar` is.
-
-What do we know, with absolute certainty, about the output?
-
-Well, we know it is a reference, because of the `&`.
-
-> **NOTE:** this document will use "reference" and "borrow" interchangeably.
-
-We know the reference *must* point to a valid `Bar` somewhere.
-
-Consider where that `Bar` must be.
-
-It cannot be a `Bar` that is created within the scope of the function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. Therefore, this must be a *pre-existing* `Bar`.
-
-If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing bar when it is called.
-
-So how could it possibly find that `Bar`?
-
-Well, the only things a function knows about are what you pass into it.
-
-Therefore, it *must* be the case that the input (a vector of `Foo`s) can somehow let us borrow a `Bar`.
-
-Or, in lifetime-speak:
-
-```rust
-fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
-    ...
-}
-```
-
-We could read the above function as:
-
-* There is an input, which is a reference to a vector. Like all things, the vector has a lifetime. We label it `'a`.
-* There is an output, which is a reference to a Bar. That reference is only valid during `'a`.
-
-Rust will allow you to write that function without include any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
-
-Notice the above code mentions the lifetime `'a` three times. It can be confusing for new Rust developers to understand why, and what each instance means. I describe them as such:
-
-* `fn example_1<'a>` means: "this is a function that is generic over some lifetime, which will be determined by the caller somehow."
-* `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
-* `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
-
-But I hope by going through how the compiler is able to know this with certainty helped you strengthen your mental model, if just a little.
-
-## Part 2: Laying the bricks
-
-I told a little white lie earlier - I said:
-
-> Well, the only thing a function knows about is what you pass into it.
-
-Maybe you caught the lie. A function actually knows about *two* things:
-
-1. Data you pass to it as arguments
-1. Data that is globally available, marked `const` or `static`
-
-Returning to the same function, this could be a valid implementation:
-
-```rust
-const GLOBAL_BAR: Bar = Bar;
-
-fn example_1<'a>(input: &'a Vec<Foo>) -> &'a Bar {
-    &GLOBAL_BAR
-}
-```
-
-Look, we're returning a valid reference to a `Bar`, and we're not even using the input `Foo` vec at all!
-
-Let's generalize what we learned earlier, to capture this case:
-
-We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive the entire time the vec of `Foo`s is alive**.
-
-A `Bar` that is constant/static passes that condition - it is alive the entire duration of the program, which obvious encompasses the lifetime of the vec of `Foo`s.
