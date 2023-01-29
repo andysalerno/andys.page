@@ -96,7 +96,7 @@ Something is still not right. Let me repeat that last part:
 
 There is yet another adjustment we need to make to our understanding.
 
-Consider the following code:
+Consider the following code, which does **not** compile:
 
 ```rust
 const GLOBAL_BAR: Bar = Bar;
@@ -121,9 +121,21 @@ I bet you can figure out pretty quickly which part is wrong.
 
 But let me ask you -- *why* is it wrong?
 
-The distinction may seem subtle. Rust does not actually care *who* owns the data. It could be the `Vec<Foo>`. It could be something static.
+First, the "what". We are creating our `Vec<Foo>` called `f`, then borrowing it and passing this borrow as an argument to `example_1`.
 
-A `Bar` that is constant/static passes that condition - it is alive the entire duration of the program, which obvious encompasses the lifetime of the vec of `Foo`s.
+After we get the response, `x`, we drop `f` (it goes out of scope).
+
+Then, we try to use the returned value `x`. This fails, because we dropped `f` already (its lifetime ended).
+
+But notice, `example_1` will always return `&GLOBAL_VAR` which is `'static`. It's pretty trivial to prove! There's not even any conditional logic in the body of `example_1`.
+
+We promised to return a reference that is valid for the duration of `&'a`. And we kept our promise, because `&'static GLOBAL_BAR` is valid during the entire program!
+
+The thing is, Rust does not care at all about the body of the function. It only cares about the definition, where we said `-> &'a Bar`.
+
+So let's once again update our understanding:
+
+We *know* the only possible way the `&Bar` is valid is if it somehow comes from data that is alive at the time the function is called. **And the input with the shortest lifetime determines the lifetime of the result.**
 
 # Part 2
 
