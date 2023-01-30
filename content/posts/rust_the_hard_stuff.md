@@ -206,6 +206,20 @@ Surely Rust is smart enough to know that every `Baz` must not outlive its refere
 
 The reason is, the lifetime of the `Bar` will be different each time. So our `Baz` must be **generic** on the lifetime. Just like a `Vec<T>` needs to handle *any* `T`, a `Baz<'a>` needs to handle *any* `'a`.
 
+Of course, when we actually use the `Baz`, we can usually skip the syntax, like so:
+
+```rust
+fn example_2() {
+    let bar = Bar;
+
+    let baz = Baz { thing: &bar };
+}
+```
+
+## Part 1 (cont): Bounds
+
+So far, we have seen lifetimes in function declarations, and in structs.
+
 ## Part 2
 
 The problem is not knowing the rules; the problem is knowing how to *think* about the rules.
