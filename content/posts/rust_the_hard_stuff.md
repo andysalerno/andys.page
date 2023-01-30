@@ -70,7 +70,9 @@ You may not see this visually in your code editor, but those two values are conn
 
 The relationship is this: The reference `&Bar` depends on `Vec<Foo>` existing. If the `Vec<Foo>` ceases to exist, our `&Bar` is no longer valid.
 
-And here we finally introduce the lifetime syntax. Rust must allow us to represent this relationship somehow.
+> Furthurmore, the `Vec<Foo>` remains *immutably borrowed* as long as the `&Bar` is alive. The longer we keep the `&Bar`, the longer the `Vec<Foo>` is borrowed. In this way, the interaction is oddly bi-directional. That is, the `&Bar` depends on the `Vec<Foo>` because it cannot live after the `Vec<Foo>` is destroyed, and the `&Vec<Foo>` depends on the `&Bar` because its remains borrowed until `&Bar` is over. (I'm tempted to call this *spooky action at a distance* but that seems a bit much).
+
+All that being said, Rust must allow us to represent this relationship somehow. So finally we introduce the lifetime syntax.
 
 In lifetime-speak:
 
@@ -205,6 +207,8 @@ Surely Rust is smart enough to know that every `Baz` must not outlive its refere
 The reason is, the lifetime of the `Bar` will be different each time. So our `Baz` must be **generic** on the lifetime. Just like a `Vec<T>` needs to handle *any* `T`, a `Baz<'a>` needs to handle *any* `'a`.
 
 ## Part 2
+
+The problem is not knowing the rules; the problem is knowing how to *think* about the rules.
 
 Many programmers are drawn to Rust with an enticing promise:
 
