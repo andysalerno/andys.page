@@ -216,9 +216,36 @@ fn example_2() {
 }
 ```
 
-## Part 1 (cont): Bounds
+## Part 1 (cont): Traits and Bounds
 
-So far, we have seen lifetimes in function declarations, and in structs.
+So far, we have seen lifetimes in function declarations, and in structs. Let's move on to traits.
+
+Say you have a trait.
+
+```rust
+trait Lug {
+    fn bar(&self) -> &Bar;
+}
+```
+
+The trait `Lug` defines a function `bar` that takes `self` by reference. No lifetime syntax is needed her. It can be elided, just like in our very first example, for the same reasons.
+
+Let's add another function to the trait:
+
+```rust
+trait Lug {
+    fn bar(&self) -> &Bar;
+    fn biz(&self, input: &Foo) -> &Bar;
+}
+```
+
+(next, show what happens if `input` is the thing returning the bar and it always lives longer than self)
+
+## Part 1 (cont): Bonus - where for<'art> thy lifetime?
+
+## Part 1 (cont): Elision with '_
+
+wow
 
 ## Part 2
 
