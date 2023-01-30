@@ -55,6 +55,15 @@ Backing up a moment. Imagine you are the caller of `example_1`. Immediately afte
 - The `&Bar` that was just returned.
 - The `&Vec<Foo>` that you passed in when you called `example_1`.
 
+Visualizing it:
+
+```rust
+fn caller() {
+    let v = Vec::new(); // a Vec<Foo>
+    let b = example_1(&v); // returns &Bar to us
+}
+```
+
 Consider the relationship between these two values.
 
 You may not see this visually in your code editor, but those two values are connected somehow. You might say these two values are **entangled** (*not official terminology, I just like that word*). There is some relationship between them.
@@ -76,7 +85,7 @@ We could read the above function as:
 - There is an input, which is a reference to a `Vec`. Like all things, the `&Vec` has a lifetime. We label it `'a`.
 - There is an output, which is a reference to a `Bar`. That reference is only valid during `'a`.
 
-Rust will allow you to write that function without including any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
+As you know, Rust will allow you to write that function without including any of the lifetime syntax.  Why?  Because of the analysis we did earlier.  We *know* the only possible way the `&Bar` is valid is if it somehow comes from data owned by the vector of `Foo`s. The compiler also knows this.  This is an **unambiguous** case, so no lifetime syntax is needed.
 
 Notice the above code mentions the lifetime `'a` three times. It can be confusing for new Rust developers to understand why, and what each instance means. I describe them as such:
 
@@ -84,7 +93,7 @@ Notice the above code mentions the lifetime `'a` three times. It can be confusin
 - `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
 - `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
 
-This is, admittedly, the simplest possible scenario. But I hope there was a *click* in your mind.
+This is, admittedly, an extremely simple scenario. But I hope there was a *click* in your mind.
 
 ### Part 1 (cont): Delving deeper
 
@@ -161,7 +170,41 @@ So let's once again update our understanding:
 
 We *know* the only possible way the `&Bar` is valid is if it somehow comes from data that is alive at the time the function is called. **And the input with the shortest lifetime determines the lifetime of the result.**
 
-# Part 2
+## Part 1 (cont): More syntax
+
+Say you have a struct.
+
+This struct holds a reference to a `Bar`.
+
+As we know, if our struct holds a reference to a `Bar`, we need some way to prove that our struct will never outlive that `Bar`.
+
+You can probably guess, the syntax appears like this:
+
+```rust
+struct Baz<'a> {
+    thing: &'a Bar,
+}
+```
+
+We could read the above as:
+
+- There is a struct called `Baz`. It holds a reference to a `Bar`.
+- The lifetime for the reference to `Bar` is called `'a`.
+- Our `Baz` can never live longer than `'a`.
+
+You might ask yourself -- why do we *need* the `<'a>` syntax here, when Rust let us skip it in the previous examples? Why can't we do this:
+
+```rust
+struct Baz {
+    thing: &Bar,
+}
+```
+
+Surely Rust is smart enough to know that every `Baz` must not outlive its reference to `Bar`, without the fancy syntax.
+
+The reason is, the lifetime of the `Bar` will be different each time. So our `Baz` must be **generic** on the lifetime. Just like a `Vec<T>` needs to handle *any* `T`, a `Baz<'a>` needs to handle *any* `'a`.
+
+## Part 2
 
 Many programmers are drawn to Rust with an enticing promise:
 
