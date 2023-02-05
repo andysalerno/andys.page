@@ -12,6 +12,8 @@ This document is broken down into parts:
 
 The intended audience for this document is a programmer who has some experience with Rust, and has a basic understanding of lifetimes, but who finds it difficult to *think about* lifetimes and gets confused by their syntax.
 
+There is a great quote: "All models are wrong, but some are useful." The model of thinking I describe below is, technically, wrong. There are many moments where a snarky reader could interrupt and say, "Well, *actually*..." I'm aware of this, but my goal is not to tell you the facts, but to help you *think* about the facts.
+
 ## Part 1: First Principles
 
 Say you have a function.
@@ -32,11 +34,11 @@ Well, we know it is a reference, because of the `&`.
 
 > **NOTE:** this document will use "reference" and "borrow" interchangeably.
 
-We know the reference *must* point to a valid `Bar` somewhere.
+We know the reference *must* point to a valid `Bar` somewhere in memory.
 
 Consider where that `Bar` must be.
 
-It cannot be a `Bar` that is created within the scope of the function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. We can't return a reference to a destroyed `Bar`. Therefore, this must be a *pre-existing* `Bar`.
+It cannot be a `Bar` that is created on the stack during function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. We can't return a reference to a destroyed `Bar`. Therefore, this must be a *pre-existing* `Bar`.
 
 If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing `Bar` when it is called.
 
@@ -48,7 +50,7 @@ The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore,
 
 If the `Vec<Foo>` is letting us borrow a `Bar`, then we could assume the `Vec<Foo>` is the "owner" of some `Bar`.
 
-But what happens when the `Vec<Foo>` is destroyed? Everything it owns, including the `Bar`, will also be destroyed.
+But what happens when the `Vec<Foo>` is destroyed? Everything it owns, including the `Bar`, will also be destroyed. So if we are borrowing that `Bar`, we must somehow be positive that it won't be used after the `Vec<Foo>` is destroyed.
 
 Backing up a moment. Imagine you are the caller of `example_1`. Immediately after `example_1` returns, you certainly have two things in scope:
 
@@ -64,7 +66,7 @@ fn caller() {
 }
 ```
 
-Consider the relationship between these two values.
+Consider the relationship between these two values, `v` and `b`.
 
 You may not see this visually in your code editor, but those two values are connected somehow. You might say these two values are **entangled** (*not official terminology, I just like that word*). There is some relationship between them.
 
@@ -97,7 +99,7 @@ Notice the above code mentions the lifetime `'a` three times. It can be confusin
 
 This is, admittedly, an extremely simple scenario. But I hope there was a *click* in your mind.
 
-### Part 1 (cont): Delving deeper
+### Part 1 (cont): ~~Lifetime~~ Lie time
 
 I lied earlier - I said:
 
@@ -124,7 +126,7 @@ Since `&GLOBAL_BAR` is `'static`, and `'static` is the topmost lifetime which en
 
 Let's generalize what we learned earlier, to capture this case:
 
-We *know* the only possible way the `&Bar` is valid is if it somehow comes from data ~~owned by the vector of `Foo`s~~ **that is alive at the time the function is called.** And the lifetime of the returned reference may come from the input, or from a larger lifetime such as `'static`.
+We *know* the only possible way the `&Bar` is valid is if it ~~somehow comes from data owned by the vector of `Foo`s~~ has a lifetime based on the input, or from a larger lifetime such as `'static`.
 
 ### Part 1 (cont): More lies
 
