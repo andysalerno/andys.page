@@ -4,17 +4,11 @@ date: 2023-01-08T14:52:22-08:00
 draft: true
 ---
 
-This document is broken down into parts:
-
-**Part 1**, wherein we describe lifetimes from first principles.
-
-**Part 2**, wherein we consider how to mentally represent lifetimes.
-
-The intended audience for this document is a programmer who has some experience with Rust, and has a basic understanding of lifetimes, but who finds it difficult to *think about* lifetimes and gets confused by their syntax.
+The intended audience for this document is a programmer who has some experience with Rust, and has a basic understanding of lifetimes, but who finds it difficult to *think about* lifetimes and gets confused by lifetime syntax.
 
 There is a great quote: "All models are wrong, but some are useful." The model of thinking I describe below is, technically, wrong. There are many moments where a snarky reader could interrupt and say, "Well, *actually*..." I'm aware of this, but my goal is not to tell you the facts, but to help you *think* about the facts.
 
-## Part 1: First Principles
+## First Principles
 
 Say you have a function.
 
@@ -50,11 +44,11 @@ The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore,
 
 If the `Vec<Foo>` is letting us borrow a `Bar`, then we could assume the `Vec<Foo>` is the "owner" of some `Bar`.
 
-But what happens when the `Vec<Foo>` is destroyed? Everything it owns, including the `Bar`, will also be destroyed. So if we are borrowing that `Bar`, we must somehow be positive that it won't be used after the `Vec<Foo>` is destroyed.
+But what happens when the `Vec<Foo>` is destroyed? Everything it owns, including the `Bar`, will also be destroyed. So if we are borrowing that `Bar`, we must somehow be sure that it won't be used after the `Vec<Foo>` is destroyed.
 
 Backing up a moment. Imagine you are the caller of `example_1`. Immediately after `example_1` returns, you certainly have two things in scope:
 
-- The `&Bar` that was just returned.
+- The `&Bar` that was just returned, which we know must come from the input `&Vec<Foo>` somehow.
 - The `&Vec<Foo>` that you passed in when you called `example_1`.
 
 Visualizing it:
@@ -70,9 +64,13 @@ Consider the relationship between these two values, `v` and `b`.
 
 You may not see this visually in your code editor, but those two values are connected somehow. You might say these two values are **entangled** (*not official terminology, I just like that word*). There is some relationship between them.
 
-The relationship is this: The reference `&Bar` depends on `Vec<Foo>` existing. If the `Vec<Foo>` ceases to exist, our `&Bar` is no longer valid.
+The relationship is this: The reference `b` depends on `v` existing. If `v` ceases to exist, our `b` is no longer valid.
 
-> Furthurmore, the `Vec<Foo>` remains *immutably borrowed* as long as the `&Bar` is alive. The longer we keep the `&Bar`, the longer the `Vec<Foo>` is borrowed. In this way, the interaction is oddly bi-directional. That is, the `&Bar` depends on the `Vec<Foo>` because it cannot live after the `Vec<Foo>` is destroyed, and the `&Vec<Foo>` depends on the `&Bar` because its remains borrowed until `&Bar` is over. (I'm tempted to call this *spooky action at a distance* but that seems a bit much).
+Why? Because of what we said earlier:
+
+> So if we are borrowing that `Bar`, we must somehow be positive that it won't be used after the `Vec<Foo>` is destroyed.
+
+Furthurmore, the `Vec<Foo>` remains *immutably borrowed* as long as the `&Bar` is alive. The longer we keep the `&Bar`, the longer the `Vec<Foo>` is borrowed. In this way, the interaction is oddly bi-directional. That is, the `&Bar` depends on the `Vec<Foo>` because it cannot live after the `Vec<Foo>` is destroyed, and the `&Vec<Foo>` depends on the `&Bar` because it remains borrowed until `&Bar` is over. (Following the *entangled* terminology, perhaps this is *spooky action at a distance*? :D).
 
 All that being said, Rust must allow us to represent this relationship somehow. So finally we introduce the lifetime syntax.
 
@@ -99,7 +97,7 @@ Notice the above code mentions the lifetime `'a` three times. It can be confusin
 
 This is, admittedly, an extremely simple scenario. But I hope there was a *click* in your mind.
 
-### Part 1 (cont): ~~Lifetime~~ Lie time
+### ~~Lifetime~~ Lie time
 
 I lied earlier - I said:
 
@@ -127,6 +125,61 @@ Since `&GLOBAL_BAR` is `'static`, and `'static` is the topmost lifetime which en
 Let's generalize what we learned earlier, to capture this case:
 
 We *know* the only possible way the `&Bar` is valid is if it ~~somehow comes from data owned by the vector of `Foo`s~~ has a lifetime based on the input, or from a larger lifetime such as `'static`.
+
+### Lies, cont
+
+This bolded statement was also a lie:
+
+> [We cannot return] a `Bar` that is created on the stack during function `example_1`. ... **Therefore, this must be a *pre-existing* `Bar`.**
+
+It's possible the `Bar` was created during the execution of the function. Rust doesn't care *when* the object was created. The important part is that the *memory* where it is created will continue to live even after the function has completed.
+
+In these two examples, the `&Bar` reference that is returned points to a `Bar` that was created during the function execution.
+
+The first example creates a `Bar` during execution, sets it on the first `Foo` (that `Foo` becomes the new *owner*), and then borrows it right back, and returns that reference. Since the new owner is a `Foo` from the input, the `Bar` is not on the stack anymore and will survive after the function has ended.
+
+### Another lie:
+
+> If the Vec<Foo> is letting us borrow a Bar, then we could assume the Vec<Foo> is the “owner” of some Bar.
+
+```rust
+fn example_1<'a>(input: &'a mut Vec<Foo>) -> &'a Bar {
+    let foo = &mut input[0];
+
+    // Bar created during function.
+    let bar = Bar;
+
+    // Set the bar on the foo.
+    foo.set_bar(bar);
+
+    // Borrow the Bar from the Foo.
+    foo.bar()
+}
+```
+
+> Admittedly, the above example requires making the reference `mut`.
+
+In this example, the `Bar` is again created on the stack. Then it is moved to an owner in the `static` scope. 
+
+```rust
+static GLOBAL_BAR: Mutex<Bar> = Mutex::new(Bar);
+
+fn example<'a>(input: &'a Vec<Foo>) -> impl Deref<Target = Bar> {
+    // Create a bar.
+    let bar = Bar;
+
+    // Lock the global static bar so we can mutate it.
+    let mut locked_bar = GLOBAL_BAR.lock().unwrap();
+
+    // Set the static bar to the created bar.
+    *locked_bar = bar;
+
+    // Return the guard lock (callers only see it as a Deref to a Bar)
+    locked_bar
+}
+```
+
+> Mutating a static value requires locking it, so we need to wrap it in a `Mutex`. We also can't return a `&Bar` anymore, since the `.lock()` gives us a `MutexGuard<Bar>` which lets us `Deref` but not `Borrow`. If you find this confusing, don't worry about these details - the point is, it's possible for a value created on the stack to outlive its stack, if it is moved to an owner with a bigger lifetime.
 
 ### Part 1 (cont): More lies
 
@@ -248,202 +301,3 @@ trait Lug {
 ## Part 1 (cont): Elision with '_
 
 wow
-
-## Part 2
-
-The problem is not knowing the rules; the problem is knowing how to *think* about the rules.
-
-Many programmers are drawn to Rust with an enticing promise:
-
-*The learning curve will be steep -- but surmount it, and you will find yourself in **memory safety Nirvana!***
-
-So those brave Rust beginners
-
-Let's talk about object-oriented programming for a second.
-
-Object-oriented programming was successful because it's easy to reason about.  In fact, it perfectly matches the *natural* way we think. The world is full of "things". And "things" can do "actions". A `Dog` can `.bark()`. A `Vehicle` can `.travel()`. A `Bike` **is a** `Vehicle`, therefore it can `.travel()`. And "things" have state. The `Bike.color` can be `Color::Red`. And so on.
-
-// Back to lifetimes. Lifetimes... do not really match intuitively with any other model we encounter day-to-day.
-// Need to mention: <https://blog.adamant-lang.org/2019/rust-lifetime-visualization-ideas/>
-
-Back to lifetimes. Lifetimes... are difficult to model in our minds. They are hard to reason about, harder to explain, hardest to abstractly represent. They are closer to mathematical proofs than they are to anything in the "natural world".
-
-> Intrusive thought: "You can't compare lifetimes with OOP! Those solve entirely different problems!"
->
-> I'm not comparing *what they do*, I am comparing *how we think about them*.
-
-Rust, as a language, does not really do anything to make lifetimes *easier*. All it does is require your lifetimes to be *correct.*
-
-The documentation does a wonderful job explaining what lifetimes are, what their rules are, and how they work.
-
-It does not do a particularly good job in showing you how to think about them.
-
-At this point, I ask you: when you look at the following code, how does your mind represent it? What shapes, structures, colors, or patterns do you see? How would you draw it abstractly?
-
-```rust
-fn example(input: &Foo) -> &Bar {
-    ...
-}
-```
-
-Obviously, I cannot answer for you. But I can share my answer, and hope it helps someone -- or better yet, learn from the answers of others.
-
-In this article, I will try to explain lifetimes *as I understand them*, with some (rather crudely done) illustrations.
-
-As the saying goes, "All models are wrong, but some are useful."
-
-It is *wrong* to think of lifetimes as scopes. But it is *useful* to think of lifetimes as scopes.
-
-## From the top
-
-Instead of starting with code, let's start with some visualizations:
-
-```goat
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│ 'static                                             │
-│                                                     │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-Above is the "static" lifetime. This is the lifetime that lasts for the duration of a Rust program.
-
-In Rust, we frequently define lifetimes in terms of other lifetimes. This means it's natural to think of them as a tree, or a set of nesting hierarchical boxes.
-
-Since `'static` is the topmost lifetime, you can therefore think of it as the root, in which all other lifetimes will live.
-
-If we have a diagram that looks like this:
-
-```goat
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│ 'static                                             │
-│                                                     │
-│   ┌──────────────────────┐ ┌──────────────────────┐ │
-│   │ 'blue                │ │ 'green               │ │
-│   │                      │ │                      │ │
-│   │  ┌─────────────────┐ │ │                      │ │
-│   │  │ 'red            │ │ │                      │ │
-│   │  │                 │ │ │                      │ │
-│   │  │                 │ │ │                      │ │
-│   │  └─────────────────┘ │ │                      │ │
-│   └──────────────────────┘ └──────────────────────┘ │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-We would say:
-
-- `'static` is, as always, the topmost lifetime, encompassing all others.
-- `'blue` ends during `'static`.
-- `'red` ends during `'blue`.
-- `'green` ends during `'static`.
-- No relationship between `'blue` and `'green` is established, even if one does exist.
-
-It should be intuitive that *all the data that exists during `'blue` also exists during `'red`.*
-
-It should be intuitive that *during `'blue`, we can't assume that data from `'red` still exists.*
-
----
-
-Now let's imagine we have some objects that exist within these defined lifetimes.
-
-I have added objects `x`, `y`, and `z`:
-
-```goat
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│ 'static                                             │
-│                                                     │
-│   let x = Foo;                                      │
-│                                                     │
-│   ┌──────────────────────┐ ┌──────────────────────┐ │
-│   │ 'blue                │ │ 'green               │ │
-│   │                      │ │                      │ │
-│   │   let y = Foo;       │ │                      │ │
-│   │                      │ │                      │ │
-│   │  ┌─────────────────┐ │ │                      │ │
-│   │  │ 'red            │ │ │                      │ │
-│   │  │                 │ │ │                      │ │
-│   │  │    let z = Foo; │ │ │                      │ │
-│   │  │                 │ │ │                      │ │
-│   │  └─────────────────┘ │ │                      │ │
-│   └──────────────────────┘ └──────────────────────┘ │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-After inspecting the above diagram, we would say:
-
-- `x` lives the entire duration of `'static`, so it is accessible during all lifetimes encompassed within `'static`: `'static, 'blue, 'red, 'green`
-- `y` lives the entire duration of `'blue`, so it is accessible during all lifetimes encompassed within `'blue`: `'blue, 'red`
-- `z` lives the entire duration of `'red`, so it is accessible during all lifetimes encompassed within `'red`: `'red`
-
-So far, I hope this seems intuitive.
-
-Let's bring back our code from earlier. Say we have a function which takes a `&Foo` as input and returns a `&Bar` as output. Don't worry about what a `Foo` is or what a `Bar` is.
-
-```rust
-fn example(input: &Foo) -> &Bar {
-    ...
-}
-```
-
-As you probably know, the above function has had its lifetime declarations elided. Let's be extra-verbose and add them back in, to help illustrate:
-
-```rust
-fn example<'a>(input: &'a Foo) -> &'a Bar {
-    ...
-}
-```
-
-```goat
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│ 'static                                             │
-│                                                     │
-│   ┌──────────────────────────────────────────────┐  │
-│   │ 'blue                                        │  │
-│   │                                              │  │
-│   │   let y = Foo;                               │  │
-│   │                                              │  │
-│   │   example<'blue>(&'blue y) {                 │  │
-│   │    ┌─────────────────┐                       │  │
-│   │    │ 'red            │                       │  │
-│   │    │                 │                       │  │
-│   │    │  [black box]    │                       │  │
-│   │    │                 │                       │  │
-│   │    └─────────────────┘                       │  │
-│   │  }  --> &'blue Bar                           │  │
-│   │                                              │  │
-│   └──────────────────────────────────────────────┘  │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-Remember, in `example<'a>()`, `'a` is essentially a generic value. It gets replaced with the "real" lifetime when we call it.
-
-Since we are calling it with argument `&y`, the generic `'a` is replaced with the lifetime of `y`, which we are calling `'blue`.
-
-If the compiler is ever unable to decide between lifetime `'purple` and lifetime `'orange`, it will always be pessimistic and pick the *shortest* one, because it must handle the worst-case scenario.
-
-## Pop quiz
-
-Question 1.
-
-I have a Rust function that returns a reference.
-
-The function takes no parameters.
-
-What's the lifetime of the reference it returns?
-
-> Hint: if we are returning a reference to data, that data must already exist somewhere.
-
-Answer: it must be `'static`:
-
-```rust
-fn example() -> &'static Foo {
-    ...
-}
-```
