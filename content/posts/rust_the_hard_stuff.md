@@ -178,7 +178,7 @@ Say you have a struct.
 
 This struct holds a reference to a `Bar`.
 
-As we know, if our struct holds a reference to a `Bar`, we need some way to prove that our struct will never outlive that `Bar`.
+As we know, if our struct holds a reference to a `Bar`, then our struct can't live longer than the `Bar`. And we need some way to prove this to the compiler.
 
 You can probably guess, the syntax appears like this:
 
@@ -218,7 +218,7 @@ fn example_2() {
 
 ## Part 1 (cont): Traits and Bounds
 
-So far, we have seen lifetimes in function declarations, and in structs. Let's move on to traits.
+So far, we have seen lifetimes in function declarations and in structs. Let's move on to traits.
 
 Say you have a trait.
 
@@ -228,7 +228,7 @@ trait Lug {
 }
 ```
 
-The trait `Lug` defines a function `bar` that takes `self` by reference. No lifetime syntax is needed her. It can be elided, just like in our very first example, for the same reasons.
+The trait `Lug` defines a function `bar` that takes `self` by reference. No lifetime syntax is needed here. It can be elided, just like in our very first example, for the same reasons.
 
 Let's add another function to the trait:
 
@@ -237,6 +237,25 @@ trait Lug {
     fn bar(&self) -> &Bar;
     fn biz(&self, input: &Foo) -> &Bar;
 }
+```
+
+And let's make a simple implementation:
+
+```rust
+impl<'a> Lug for Baz<'a> {
+    fn bar(&self) -> &Bar {
+        self.thing
+    }
+
+    fn biz(&self, _input: &Foo) -> &Bar {
+        self.thing
+    }
+}
+```
+
+And a simple use-case:
+
+```rust
 ```
 
 (next, show what happens if `input` is the thing returning the bar and it always lives longer than self)
