@@ -69,40 +69,28 @@ fn example_1(input: &Vec<Foo>) -> &Bar {
 Or we can find it from the static scope, like this:
 
 ```rust
-fn example_1(input: &Vec<Foo>) -> &Bar {
-    let bar = input[0].bar();
+const MyBar: &'static Bar = &Bar;
 
-    bar
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    MyBar
 }
 ```
 
 From the caller's point of view, it doesn't matter either way. The important thing is, you provided a reference to a `Bar`, and that `Bar` is guaranteed to be alive.
 
-And that's it! You understand all there is to know about lifetimes! Now get out there and be fearlessly concurrent!
-
 .
 
 ..
 
-...
+....
 
-.....
+........
 
-But wait, what about `'a`? What about `for<'a>`? What about `T: 'static`?
+## Part 2
 
-// Ok, so the stack is out. But hold on, all this talk about the "stack" may have you thinking: what about the *heap*?
-// It's a fair question, but the wrong question. Forgive me for ignoring it entirely.  Maybe all my talk about "where" the `Bar` must live has misled you.
-// The thing that really matters is not *where* it lives but **when** it lives.
+I'm going to guess that you found the above section to be trivial. And you're right, it was extremely simplistic.
 
-Let me ask you this -  what data is definitely accessible by `example_1` while it executes?
-
-Now a slightly different question - what data is guaranteed to be "alive" right after our function `example_1` has returned?
-
-Here's a rough but acceptable answer:
-
-- ~~Any data on the stack of `example_1`.~~
-- Any data passed to `example_1` by its caller (including references).
-- Any data that is `static` (which is always alive, and globally available).
+But I wanted to prime your mind with that thought process, because next we will begin to generalize.
 
 The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
 
