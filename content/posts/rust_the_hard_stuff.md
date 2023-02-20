@@ -40,19 +40,61 @@ What do we mean by *pre-existing memory*?
 
 Well, imagine you're writing the implementation of the function `example_1`. Somehow, you need to find a `Bar` that you can reference, and that reference will be your return value.
 
-Ok, so the stack is out. But hold on, all this talk about the "stack" may have you thinking: what about the *heap*?
-
-It's a fair question, but the wrong question. Forgive me for ignoring it entirely.  Maybe all my talk about "where" the `Bar` must live has misled you.
-
-The thing that really matters is not *where* it lives but **when** it lives.
-
-Let me ask you this -  what data is definitely accessible by `example_1` while it executes?
+Where are all the places that you, the humble function `example_1`, can look to find that `Bar`? In other words, what data do you have access to?
 
 Here's a rough but acceptable answer:
 
-- Any data created on the stack of `example_1`.
-- Any data passed to `example_1` by its caller (including references).
-- Any data that is `static` (which is always alive, and globally available).
+- You can look at local variables on your own stack.
+- You can look at any arguments passed to you by the caller.
+- You can look at anything marked `static` - that is, any data that is globally available while the program executes.
+
+Now which of these three places can we actually use for our return value?
+
+Even if you find a `Bar` on your local stack, you can't return a reference to it, for reasons we already covered. That leaves us with:
+
+- ~~You can look at local variables on your own stack.~~
+- You can look at any arguments passed to you by the caller.
+- You can look at anything marked `static` - that is, any data that is globally available while the program executes.
+
+Great! We have two places we can look to find that `Bar`. Either we can find it from the input somehow, maybe like this:
+
+```rust
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    let bar = input[0].bar();
+
+    bar
+}
+```
+
+Or we can find it from the static scope, like this:
+
+```rust
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    let bar = input[0].bar();
+
+    bar
+}
+```
+
+From the caller's point of view, it doesn't matter either way. The important thing is, you provided a reference to a `Bar`, and that `Bar` is guaranteed to be alive.
+
+And that's it! You understand all there is to know about lifetimes! Now get out there and be fearlessly concurrent!
+
+.
+
+..
+
+...
+
+.....
+
+But wait, what about `'a`? What about `for<'a>`? What about `T: 'static`?
+
+// Ok, so the stack is out. But hold on, all this talk about the "stack" may have you thinking: what about the *heap*?
+// It's a fair question, but the wrong question. Forgive me for ignoring it entirely.  Maybe all my talk about "where" the `Bar` must live has misled you.
+// The thing that really matters is not *where* it lives but **when** it lives.
+
+Let me ask you this -  what data is definitely accessible by `example_1` while it executes?
 
 Now a slightly different question - what data is guaranteed to be "alive" right after our function `example_1` has returned?
 
