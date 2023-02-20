@@ -32,13 +32,31 @@ We know the reference *must* point to a valid `Bar` somewhere in memory.
 
 Consider where that `Bar` must be.
 
-It cannot be a `Bar` that is created on the stack during function `example_1`.  If that were the case, the `Bar` would be destroyed when the function is over. We can't return a reference to a destroyed `Bar`. Therefore, this must be a *pre-existing* `Bar`.
+It cannot be a `Bar` that lives on the stack of function `example_1`, because the function's stack is destroyed when the function completes, and it would be quite rude of us to return a destroyed `Bar` to our caller (not to mention, the compiler won't allow it).
 
-If `example_1` returns a reference to a pre-existing `Bar`, then it must somehow know how to find a pre-existing `Bar` when it is called.
+Therefore, this must be a `Bar` in *pre-existing* memory, and memory that is still valid after `example_1` returns, and can't be `example_1`s temporary stack.
 
-So where could it possibly find that `Bar`?
+What do we mean by *pre-existing memory*?
 
-Well, the only data a function knows about are what you pass into it.
+Well, imagine you're writing the implementation of the function `example_1`. Somehow, you need to find a `Bar` that you can reference, and that reference will be your return value that the caller will receive.  That `Bar` needs to be valid when your function returns, so the local stack is not an option.
+
+Ok, so the stack is out. But hold on, all this talk about the "stack" may have you asking: what about the *heap*?
+
+It's a fair question, but the wrong question.
+
+Maybe all my talk about "where" the `Bar` must live has misled you.
+
+The thing that really matters is not *where* it lives but **when** it lives.
+
+Yes, in Rust, we have access to a heap via types such as `Box`.
+
+But in the case of `example_1`, this isn't a solution, unless we change the return type to `Box<Bar>`, which would defeat the purpose of this example.
+
+Here's a rough answer:
+
+- You can create a `Bar` on the stack, and read it from there.
+- You can access a `Bar` from data that is `static`.
+- You can access a `Bar`
 
 The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
 
@@ -138,7 +156,7 @@ In these two examples, the `&Bar` reference that is returned points to a `Bar` t
 
 The first example creates a `Bar` during execution, sets it on the first `Foo` (that `Foo` becomes the new *owner*), and then borrows it right back, and returns that reference. Since the new owner is a `Foo` from the input, the `Bar` is not on the stack anymore and will survive after the function has ended.
 
-### Another lie:
+### Another lie
 
 > If the Vec<Foo> is letting us borrow a Bar, then we could assume the Vec<Foo> is the “owner” of some Bar.
 
@@ -159,7 +177,7 @@ fn example_1<'a>(input: &'a mut Vec<Foo>) -> &'a Bar {
 
 > Admittedly, the above example requires making the reference `mut`.
 
-In this example, the `Bar` is again created on the stack. Then it is moved to an owner in the `static` scope. 
+In this example, the `Bar` is again created on the stack. Then it is moved to an owner in the `static` scope.
 
 ```rust
 static GLOBAL_BAR: Mutex<Bar> = Mutex::new(Bar);
