@@ -34,29 +34,33 @@ Consider where that `Bar` must be.
 
 It cannot be a `Bar` that lives on the stack of function `example_1`, because the function's stack is destroyed when the function completes, and it would be quite rude of us to return a destroyed `Bar` to our caller (not to mention, the compiler won't allow it).
 
-Therefore, this must be a `Bar` in *pre-existing* memory, and memory that is still valid after `example_1` returns, and can't be `example_1`s temporary stack.
+Therefore, this must be a `Bar` in *pre-existing* memory, and memory that is still valid after `example_1` returns.
 
 What do we mean by *pre-existing memory*?
 
-Well, imagine you're writing the implementation of the function `example_1`. Somehow, you need to find a `Bar` that you can reference, and that reference will be your return value that the caller will receive.  That `Bar` needs to be valid when your function returns, so the local stack is not an option.
+Well, imagine you're writing the implementation of the function `example_1`. Somehow, you need to find a `Bar` that you can reference, and that reference will be your return value.
 
-Ok, so the stack is out. But hold on, all this talk about the "stack" may have you asking: what about the *heap*?
+Ok, so the stack is out. But hold on, all this talk about the "stack" may have you thinking: what about the *heap*?
 
-It's a fair question, but the wrong question.
-
-Maybe all my talk about "where" the `Bar` must live has misled you.
+It's a fair question, but the wrong question. Forgive me for ignoring it entirely.  Maybe all my talk about "where" the `Bar` must live has misled you.
 
 The thing that really matters is not *where* it lives but **when** it lives.
 
-Yes, in Rust, we have access to a heap via types such as `Box`.
+Let me ask you this -  what data is definitely accessible by `example_1` while it executes?
 
-But in the case of `example_1`, this isn't a solution, unless we change the return type to `Box<Bar>`, which would defeat the purpose of this example.
+Here's a rough but acceptable answer:
 
-Here's a rough answer:
+- Any data created on the stack of `example_1`.
+- Any data passed to `example_1` by its caller (including references).
+- Any data that is `static` (which is always alive, and globally available).
 
-- You can create a `Bar` on the stack, and read it from there.
-- You can access a `Bar` from data that is `static`.
-- You can access a `Bar`
+Now a slightly different question - what data is guaranteed to be "alive" right after our function `example_1` has returned?
+
+Here's a rough but acceptable answer:
+
+- ~~Any data on the stack of `example_1`.~~
+- Any data passed to `example_1` by its caller (including references).
+- Any data that is `static` (which is always alive, and globally available).
 
 The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
 
