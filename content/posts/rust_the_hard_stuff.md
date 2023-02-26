@@ -30,31 +30,21 @@ Well, we know it is a reference, because of the `&`.
 
 We know the reference *must* point to a valid `Bar` somewhere in memory.
 
-Consider where that `Bar` must be.
-
-It cannot be a `Bar` that lives on the stack of function `example_1`, because the function's stack is destroyed when the function completes, and it would be quite rude of us to return a destroyed `Bar` to our caller (not to mention, the compiler won't allow it).
-
-Therefore, this must be a `Bar` in *pre-existing* memory, and memory that is still valid after `example_1` returns.
-
-What do we mean by *pre-existing memory*?
-
-Well, imagine you're writing the implementation of the function `example_1`. Somehow, you need to find a `Bar` that you can reference, and that reference will be your return value.
-
-Where are all the places that you, the humble function `example_1`, can look to find that `Bar`? In other words, what data do you have access to?
+Imagine you're writing the implementation of the function `example_1`. Where are all the places that you can look to find that `Bar`? In other words, what data do you have access to?
 
 Here's a rough but acceptable answer:
 
 - You can look at local variables on your own stack.
 - You can look at any arguments passed to you by the caller.
-- You can look at anything marked `static` - that is, any data that is globally available while the program executes.
+- You can look at anything marked `static` -- that is, any data that is globally available during program execution.
 
 Now which of these three places can we actually use for our return value?
 
-Even if you find a `Bar` on your local stack, you can't return a reference to it, for reasons we already covered. That leaves us with:
+We can't use the local stack, because that's destroyed when the function ends. That leaves us with:
 
 - ~~You can look at local variables on your own stack.~~
 - You can look at any arguments passed to you by the caller.
-- You can look at anything marked `static` - that is, any data that is globally available while the program executes.
+- You can look at anything marked `static` -- that is, any data that is globally available during program execution.
 
 Great! We have two places we can look to find that `Bar`. Either we can find it from the input somehow, maybe like this:
 
@@ -76,7 +66,21 @@ fn example_1(input: &Vec<Foo>) -> &Bar {
 }
 ```
 
-From the caller's point of view, it doesn't matter either way. The important thing is, you provided a reference to a `Bar`, and that `Bar` is guaranteed to be alive.
+If you're feeling non-deterministic, you could even toss a coin, and sometimes return one from the input, and sometimes return one from `'static`:
+
+```rust
+const MyBar: &'static Bar = &Bar;
+
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    if coin_toss() {
+        MyBar
+    } else {
+        input[0].bar()
+    }
+}
+```
+
+As you can see, the caller has no idea *where* you got that `Bar` from. It's none of their business. All they know is that you promised a valid reference to a `Bar`, and that's what you gave them.
 
 .
 
@@ -86,13 +90,46 @@ From the caller's point of view, it doesn't matter either way. The important thi
 
 ........
 
-## Part 2
+## Part 2a
 
-I'm going to guess that you found the above section to be trivial. And you're right, it was extremely simplistic.
+Imagine you are the caller of `example_1`.
+
+```rust
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    // implementation: none of your business :3
+}
+```
+
+You dutifully pass in a `&Vec<Foo>`. You get back a `&Bar`, as promised.
+
+```rust
+fn caller() {
+    let foos = Vec::new();
+
+    let bar = example_1(&foos);
+}
+```
+
+What do we know, with absolute certainty, about the `&Bar`?
+
+We know that it's a reference to a valid `Bar` somewhere in memory, otherwise it wouldn't compile.
+
+Where could that `Bar` be?  Where could `fn example_1` have found it?
+
+The answer may give you deja vu:
+
+- It could have come from the input you provided.
+- It could have come from the `'static` scope -- i.e., data that is always alive.
+
+You don't know which of those two sources provided the `Bar`. It could have been either one.
+
+## Part 2b
+
+I'm guessing you found the above section to be trivial. And you're right, it was extremely simplistic.
 
 But I wanted to prime your mind with that thought process, because next we will begin to generalize.
 
-The only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
+In `example_1`, the only thing we are passing in is a reference to a `Vec` of `Foo`s. Therefore, it *must* be the case that the input (the `Vec` of `Foo`s) can somehow let us borrow a `Bar`.
 
 If the `Vec<Foo>` is letting us borrow a `Bar`, then we could assume the `Vec<Foo>` is the "owner" of some `Bar`.
 
