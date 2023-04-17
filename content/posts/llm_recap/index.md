@@ -4,7 +4,7 @@ date: 2023-04-16T22:05:27-07:00
 draft: false
 ---
 
-*Disclaimer: this post was generated entirely by a human, using a model trained via an evolutionary algorithm over the course of ~4 billion years, and then further finetuned using a mix of reinforcement learning and supervised learning for another ~30 years.*
+*Disclaimer: the text in this post was generated entirely by a human, using a model trained via an evolutionary algorithm over the course of ~4 billion years, and then further finetuned using a mix of reinforcement learning and supervised learning for another ~30 years.*
 
 For the past month month or so, this has been my morning ritual:
 
@@ -21,6 +21,8 @@ It goes without saying that the last few months have been a whirlwind in this ar
 Scattered across the globe, there are elite clans of well-funded researchers with an abundance of know-how and ungodly amounts of compute, and they perform their magic incantations on massive clusters of machines hosted in far-off lairs (I’ve heard a “torch” is involved). Each of these clans power up their respective machine, and feed billions (trillions, now) of tokens into its great churning maw, until it has digested enough that it has learned to speak.
 
 Once they’ve had their fill, these massive silicon forges emit a tiny diamond of knowledge called "weights", much like how a mollusk produces a pearl. These weights, if handled just right, may be inserted into another, smaller machine, awakening it, breathing into it a crude imitation of life. And crude though it may be, the potential of a machine that *understands* is far greater than the potential of a machine that does not. With this pearl inserted, the golem awakens.
+
+{{< figure src="assets/forge.jpg" caption="*Bing made this one, from the prompt: a massive glowing iron forge, except instead of forging iron, it forges cpus*" >}}
 
 It’s unclear what good these golems will be used for, but they’re quite good at menial tasks, such as reading Excel sheets, finishing your English homework, or providing you a good-enough Fibonacci sequence generator. Occasionally they may have [existential crises](https://www.theverge.com/2023/2/15/23599072/microsoft-ai-bing-personality-conversations-spy-employees-webcams) or [spew racist or hateful rhetoric](https://techcrunch.com/2023/04/12/researchers-discover-a-way-to-make-chatgpt-consistently-toxic/), but aren’t there always bumps in the road of progress?
 
