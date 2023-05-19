@@ -1,0 +1,78 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Using Guidance with GPTQ - ⌨️🤷🏻‍♂️📷</title><meta name=HandheldFriendly content="True"><meta name=MobileOptimized content="320"><meta name=referrer content="no-referrer"><meta name=description content><meta property="og:site_name" content="⌨️🤷🏻‍♂️📷"><meta property="og:locale" content="en_US"><meta property="og:type" content="article"><meta property="og:url" content="https://andys.page/posts/guidance-gptq/"><meta property="og:title" content="Using Guidance with GPTQ"><meta property="og:image" content="https://andys.page/"><meta property="og:description" content><meta name=twitter:card content="summary_large_image"><meta name=twitter:title content="Using Guidance with GPTQ"><meta name=twitter:description content><meta name=twitter:image content="https://andys.page/"><link rel=canonical href=https://andys.page/posts/guidance-gptq/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css integrity="sha512-MoRNloxbStBcD8z3M/2BmnT+rg4IsMxPkXaGh2zD6LGNNFE80W3onsAhRcMAMrSoyWL9xD7Ert0men7vR8LUZg==" crossorigin=anonymous><link rel=stylesheet href=https://andys.page/css/custom.css><link rel="shortcut icon" href=https://andys.page/images/favicon.png><link href=https://andys.page/index.xml rel=alternate type=application/rss+xml title=⌨️🤷🏻‍♂️📷></head><body><script data-goatcounter=https://andysalerno.goatcounter.com/count async src=//gc.zgo.at/count.js></script>
+<script src=/js/shuffle-message.js defer></script><div class="mt-xl header"><div class=container><div class="row justify-content-center"><div class=col-auto><a href=https://andys.page/><h1 class=name>Andy, xor Andrew</h1></a><h8 class=tagline><i>Professional software developer / hobbyist street photographer <span class=bonusTagline></span><noscript>/ Respects your js-disabled browsing</noscript><span class=blinker></span></i></h8></div></div><div class="row justify-content-center"><ul class="nav nav-primary"><li class=nav-item><a class=nav-link href=/>Home</a></li><li class=nav-item><a class=nav-link href=/about/>About</a></li><li class=nav-item><a class=nav-link href=https://github.com/andysalerno>GitHub</a></li><li class=nav-item><a class=nav-link href=/gallery/>Photo gallery</a></li><li class=nav-item><a class=nav-link href=https://www.flickr.com/photos/andysalerno/>Flickr</a></li><li class=nav-item><a class=nav-link href=/index.xml>Rss (there are dozens of us!)</a></li></ul></div></div></div><div id=myModal class=myModal><div class=flex-row><i class="myModal-content caption" id=modal-count>Click to view</i></div><div class="flex-row img-row"><div class=img-row-arrow-col><div class=flex-pusher onclick=goBackPrevImage()></div><div id=leftArrow class="myModal-content caption img-row-arrow" onclick=goBackPrevImage()>&lt;</div><div class=flex-pusher onclick=goBackPrevImage()></div></div><img class=myModal-content id=modal-img onclick=advanceNextImage()><div class=img-row-arrow-col><div class="caption close-button flex-pusher" onclick=closeModal()>X</div><div class=flex-pusher-08 onclick=advanceNextImage()></div><div id=rightArrow class="myModal-content caption img-row-arrow" onclick=advanceNextImage()>></div><div class=flex-pusher onclick=advanceNextImage()></div></div></div></div><script src=/js/modal.js></script><div class=content><div class=container><div class="row justify-content-center"><div class="col-sm-12 col-lg-8"><h1 class="mx-0 mx-md-4">Using Guidance with GPTQ</h1><div class="meta-date mx-0 mx-md-4"><time>2023/05/18</time></div><div class=markdown><p>I&rsquo;ve been very enthusiastically playing with <a href=https://github.com/microsoft/guidance>guidance</a>, a library from Microsoft that lets you compose prompts for LLMs, and interact with those LLMs programmatically in a very natural way. I plan on using it for my personal projects going forward.</p><p>I&rsquo;m excited because this library lets you build prompts the way you <em>think</em> about prompts. No more fussing around with Langchain.</p><p>One issue is, I mostly play with GPTQ-quantized models. My current favorite is <a href=https://huggingface.co/TheBloke/Wizard-Vicuna-13B-Uncensored-GPTQ>Wizard-Vicuna-13B-Uncensored-GPTQ</a>, very kindly quantized by <a href=https://huggingface.co/TheBloke>TheBloke.</a></p><figure><img src=assets/guiding-ai.png></figure><blockquote><p><em>Generated with Bing from prompt: &ldquo;a newspaper cartoon, black and white, cartoonish, of a human guiding an AI&rdquo;</em></p></blockquote><p>Guidance doesn&rsquo;t have built-in support for GPTQ yet, but it&rsquo;s pretty trivial to add it. Fair warning, this is a bit of a hack, mostly just glueing together the GPTQ model loading provided by the GPTQ project, plus some helpers from <a href=https://github.com/oobabooga/text-generation-webui/blob/main/modules/GPTQ_loader.py>oobabooga/text-generation-webui</a> (which help with loading models of varying name patterns). Also note, since it borrows from those projects, it adheres to their licenses, so keep that in mind if you end up using this for anything outside of a toy project.</p><p>To make guidance work with GPTQ, I simply <a href=https://github.com/andysalerno/guidance-GPTQ-for-LLaMa/tree/triton>forked the GPTQ repo</a>, added <code>guidance</code> to the <code>requirements.txt</code>, and then added a file <a href=https://github.com/andysalerno/guidance-GPTQ-for-LLaMa/blob/triton/llama_quantized.py>llama_quantized.py</a> that adds an implementation of the class <code>guidance.llms._transformers.Transformers</code> called <code>LLaMAQuantized</code>. From that point, you can use guidance as normal, but create an instance of <code>LLaMAQuantized</code> instead of, say, <code>OpenAI</code>. Here&rsquo;s an example:</p><div class=highlight><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#00f>import</span> guidance
+</span></span><span style=display:flex><span><span style=color:#00f>from</span> llama_quantized <span style=color:#00f>import</span> LLaMAQuantized
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:green># use `model` how you&#39;d use any other guidance llm</span>
+</span></span><span style=display:flex><span>model = LLaMAQuantized(model_dir=<span style=color:#a31515>&#39;/home/models&#39;</span>, model=<span style=color:#a31515>&#39;Wizard-Vicuna-13B-Uncensored-GPTQ&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:green># Example below taken from the guidance examples, slightly modified:</span>
+</span></span><span style=display:flex><span>demo_results = [{<span style=color:#a31515>&#39;text&#39;</span>: <span style=color:#a31515>&#39;OpenAI systems run on the fifth most powerful supercomputer in the world. [5] [6] [7] The organization was founded in San Francisco in 2015 by Sam Altman, Reid Hoffman, Jessica Livingston, Elon Musk, Ilya Sutskever, Peter Thiel and others, [8] [1] [9] who collectively pledged US$ 1 billion. Musk resigned from the board in 2018 but remained a donor.&#39;</span>},
+</span></span><span style=display:flex><span> {<span style=color:#a31515>&#39;text&#39;</span>: <span style=color:#a31515>&#39;About OpenAI is an AI research and deployment company. Our mission is to ensure that artificial general intelligence benefits all of humanity. Our vision for the future of AGI Our mission is to ensure that artificial general intelligence—AI systems that are generally smarter than humans—benefits all of humanity. Read our plan for AGI&#39;</span>},
+</span></span><span style=display:flex><span> {<span style=color:#a31515>&#39;text&#39;</span>: <span style=color:#a31515>&#39;Samuel H. Altman ( / ˈɔːltmən / AWLT-mən; born April 22, 1985) is an American entrepreneur, investor, and programmer. [2] He is the CEO of OpenAI and the former president of Y Combinator. [3] [4] Altman is also the co-founder of Loopt (founded in 2005) and Worldcoin (founded in 2020). Early life and education [ edit]&#39;</span>}]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>practice_round = guidance(
+</span></span><span style=display:flex><span><span style=color:#a31515>&#39;&#39;&#39;{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>Who are the founders of OpenAI?
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>&lt;search&gt;OpenAI founders&lt;/search&gt;
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>Search results:
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~#each results}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>&lt;result&gt;
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{this.text}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>&lt;/result&gt;{{/each}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>The founders of OpenAI are Sam Altman, Reid Hoffman, Jessica Livingston, Elon Musk, Ilya Sutskever, Peter Thiel and others.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}&#39;&#39;&#39;</span>, model)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>practice_round = practice_round(results=demo_results)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#00f>def</span> is_search(completion):
+</span></span><span style=display:flex><span>    <span style=color:#00f>return</span> <span style=color:#a31515>&#39;&lt;search&gt;&#39;</span> <span style=color:#00f>in</span> completion
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#00f>def</span> search(query):
+</span></span><span style=display:flex><span>    search_results = web_search(query)
+</span></span><span style=display:flex><span>    scored_results = find_closest_sections(search_results, query)
+</span></span><span style=display:flex><span>    scored_results = scored_results[:4]
+</span></span><span style=display:flex><span>    print(scored_results)
+</span></span><span style=display:flex><span>    <span style=color:#00f>return</span> scored_results
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>prompt = guidance(<span style=color:#a31515>&#39;&#39;&#39;{{#system~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>You are a helpful assistant.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/system}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>From now on, whenever your response depends on any factual information, please search the web by using the function &lt;search&gt;query&lt;/search&gt; before responding. I will then paste web results in, and you can respond. But please respond as if I have not seen the results.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>Ok, I will do that. Let&#39;s do a practice round.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{&gt;practice_round}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>That was great, now let&#39;s do another one.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>Ok, I&#39;m ready.
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{user_query}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{gen &#34;query&#34; stop=&#34;&lt;/search&gt;&#34;}}{{#if (is_search query)}}&lt;/search&gt;{{/if}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#if (is_search query)}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#user~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>Search results: {{#each (search query)}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>&lt;result&gt;
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{this.text}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>&lt;/result&gt;{{/each}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/user}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{#assistant~}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{gen &#34;answer&#34;}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{~/assistant}}
+</span></span></span><span style=display:flex><span><span style=color:#a31515>{{/if}}&#39;&#39;&#39;</span>, model)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>prompt = prompt(practice_round=practice_round, search=search, is_search=is_search, user_query=<span style=color:#a31515>&#34;Where are the best places to see cherry blossoms in Seattle?&#34;</span>)
+</span></span></code></pre></div><p><a href=https://github.com/andysalerno/guidance-GPTQ-for-LLaMa/blob/triton/guidance_playground.ipynb>See the full notebook output here.</a></p><p><em>Note: I am employed by Microsoft but I have no relation to the guidance project or the authors. Opinions are my own.</em></p></div></div></div></div></div></body></html>
