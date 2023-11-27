@@ -20,7 +20,7 @@ Well, that's not entirely true - there are sampling techniques like [top_k, top_
 
 And yet, neither top_k nor top_p explore any further than the very next token. You could say they have "depth" value of 1, since they never look further down the state-space tree than one step.
 
-What are some strategies for exploring further down the tree? Can we explore a bit deeper, and possibly find a future state that has a higher total score? A higher total score across all tokens should imply a better resonse from the LLM, right?
+What are some strategies for exploring further down the tree? Can we explore a bit deeper, and possibly find a future state that has a higher total score? A higher total score across all tokens should imply a better response from the LLM, right?
 
 ## Beam Search
 
@@ -83,7 +83,7 @@ In this approach, instead of picking the highest-scoring token and calling it a 
 
 Unlike beam search, this approach uses almost no additional vram. And in my (totally subjective and unscientific) experiments, it produces higher quality output from the LLM.
 
-I'm not sure why tree search approaches like this are not more common in the world of LLM self-hosting, since it's so straightforward to implement, and the problem of searching a tree is a classic computer science problem with many known strategies and solutions, like the above.
+I'm not sure why tree search approaches like this are not more common in the world of LLM self-hosting, since it's very straightforward to implement, and the problem of searching a tree is a classic computer science problem with many known strategies and solutions, like the above.
 
 {{< figure src="assets/img4.jpg" >}}
 
@@ -92,7 +92,7 @@ I'm not sure why tree search approaches like this are not more common in the wor
 If you're curious, here are some outputs, all for the exact same input prompt, but using the strategies described above.
 
 #### Code
-The code used to generate these results can be found in my repo here: ...
+The code used to generate these results can be found in [my repo here.](https://github.com/andysalerno/naive-llm-tree-search)
 
 **Prompt:**
 
