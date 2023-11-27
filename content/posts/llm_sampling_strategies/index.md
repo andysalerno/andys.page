@@ -1,7 +1,7 @@
 ---
 title: "Trying simple tree-search techniques for LLM token sampling"
 date: 2023-11-26T19:56:30-08:00
-draft: true
+draft: false
 ---
 
 # Trying simple tree-search techniques for LLM token sampling
