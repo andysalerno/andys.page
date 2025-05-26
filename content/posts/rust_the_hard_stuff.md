@@ -6,9 +6,13 @@ draft: true
 
 The intended audience for this document is a programmer who has some experience with Rust, and has a basic understanding of lifetimes, but who finds it difficult to *think about* lifetimes and gets confused by lifetime syntax.
 
-There is a great quote: "All models are wrong, but some are useful." The model of thinking I describe below is, technically, wrong. There are many moments where a snarky reader could interrupt and say, "Well, *actually*..." I'm aware of this, but my goal is not to tell you the facts, but to help you *think* about the facts.
+"All models are wrong, but some are useful." The model of thinking I describe below is, technically, wrong. There are many moments where a snarky reader could interrupt and say, "Well, *actually*..." I'm aware of this, but my goal is not to tell you the facts, but to help you *think* about the facts.
 
-## First Principles
+## A quick quiz
+
+Let's go over the sort of questions I am interested in answering.
+
+## First principals
 
 Say you have a function.
 
@@ -22,7 +26,7 @@ Inspect the above function. Consider its input. Consider its output.
 
 Don't worry about what a `Foo` is. Don't worry about what a `Bar` is.
 
-What do we know, with absolute certainty, about the output?
+What do we know, with absolute certainty, about the function's output?
 
 Well, we know it is a reference, because of the `&`.
 
@@ -30,12 +34,12 @@ Well, we know it is a reference, because of the `&`.
 
 We know the reference *must* point to a valid `Bar` somewhere in memory.
 
-Imagine you're writing the implementation of the function `example_1`. Where are all the places that you can look to find that `Bar`? In other words, what data do you have access to?
+Imagine you're writing the implementation of the function `example_1`. You must return a reference to a `Bar`. Where are all the places you can look to find that `Bar`? In other words, what data do you have access to?
 
 Here's a rough but acceptable answer:
 
 - You can look at local variables on your own stack.
-- You can look at any arguments passed to you by the caller.
+- You can look at any data passed to you by the caller.
 - You can look at anything marked `static` -- that is, any data that is globally available during program execution.
 
 Now which of these three places can we actually use for our return value?
@@ -43,8 +47,8 @@ Now which of these three places can we actually use for our return value?
 We can't use the local stack, because that's destroyed when the function ends. That leaves us with:
 
 - ~~You can look at local variables on your own stack.~~
-- You can look at any arguments passed to you by the caller.
-- You can look at anything marked `static` -- that is, any data that is globally available during program execution.
+- You can look at any data passed to you by the caller.
+- You can look at anything marked `static`.
 
 Great! We have two places we can look to find that `Bar`. Either we can find it from the input somehow, maybe like this:
 
@@ -104,7 +108,7 @@ You dutifully pass in a `&Vec<Foo>`. You get back a `&Bar`, as promised.
 
 ```rust
 fn caller() {
-    let foos = Vec::new();
+    let foos = vec![Foo::new()];
 
     let bar = example_1(&foos);
 }
@@ -116,12 +120,53 @@ We know that it's a reference to a valid `Bar` somewhere in memory, otherwise it
 
 Where could that `Bar` be?  Where could `fn example_1` have found it?
 
-The answer may give you deja vu:
+We already answered this earlier:
 
 - It could have come from the input you provided.
 - It could have come from the `'static` scope -- i.e., data that is always alive.
 
 You don't know which of those two sources provided the `Bar`. It could have been either one.
+
+Consider this code:
+
+```rust
+const MyBar: &'static Bar = &Bar;
+
+fn example_1(input: &Vec<Foo>) -> &Bar {
+    MyBar
+}
+
+// Updated to return a reference:
+fn caller() -> &'static Bar {
+    let foos = vec![Foo];
+
+    let bar = example_1(&foos);
+
+    bar
+}
+```
+
+You might read it as such:
+- There is a static `Bar` that lives for the duration of the program.
+- `example_1` takes in a reference to a `Vec<Foo>` and returns a reference to a `Bar`.
+- Specifically, it returns a reference to the statically-available `&Bar`.
+- `caller` simply returns what `example_1` returned: the reference to the static `Bar`.
+
+Should that code compile? The answer is: no. The compiler error is particularly illuminating:
+
+```
+error[E0515]: cannot return value referencing local variable `foos`
+  --> src/main.rs:15:5
+   |
+13 |     let bar = example_1(&foos);
+   |                         ----- `foos` is borrowed here
+14 |
+15 |     bar
+   |     ^^^ returns a value referencing data owned by the current function
+```
+
+This might surprise you - the compiler is complaining "cannot return value referencing local variable `foos`." But we're not! We're returning a reference to the static `Bar`! That's the thing - it doesn't matter. The compiler cares about what we *could* be borrowing, and we *could* be borrowing from the `foos`.
+
 
 ## Part 2b
 
@@ -181,7 +226,7 @@ As you know, Rust will allow you to write that function without including any of
 Notice the above code mentions the lifetime `'a` three times. It can be confusing for new Rust developers to understand why, and what each instance means. I describe them as such:
 
 - `fn example_1<'a>` means: "this is a function that is generic over some lifetime, which will be determined by the caller somehow."
-- `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and this reference's lifetime becomes known to us as `'a`."
+- `input: &'a Vec<Foo>` means: "the caller will provide us a reference to some data, and that data's lifetime becomes known to us as `'a`."
 - `-> &'a Bar` means: "the returned value is a reference to a `Bar`, and this reference is only valid during `'a`, which was determined by the input reference provided by the caller."
 
 This is, admittedly, an extremely simple scenario. But I hope there was a *click* in your mind.
