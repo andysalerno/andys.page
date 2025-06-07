@@ -4,64 +4,38 @@ document.addEventListener('DOMContentLoaded', function () {
     const themeToggleText = document.getElementById('theme-toggle-text');
     const html = document.documentElement;
 
-    // Get saved theme or default to null (use system preference)
+    // Get saved theme preference or determine from system
     let currentTheme = localStorage.getItem('theme');
 
-    // Function to update theme toggle text
+    // If no saved preference, detect system preference
+    if (!currentTheme) {
+        currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    // Function to update theme toggle text and aria-label
     function updateToggleText(theme) {
         if (theme === 'dark') {
             themeToggleText.textContent = '☀️';
             themeToggle.setAttribute('aria-label', 'Switch to light theme');
-        } else if (theme === 'light') {
+        } else {
             themeToggleText.textContent = '🌙';
             themeToggle.setAttribute('aria-label', 'Switch to dark theme');
-        } else {
-            // Auto mode - show current effective theme
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            themeToggleText.textContent = prefersDark ? '☀️' : '🌙';
-            themeToggle.setAttribute('aria-label', 'Theme: Auto (click to override)');
         }
     }
 
     // Function to apply theme
     function applyTheme(theme) {
-        if (theme) {
-            html.setAttribute('data-theme', theme);
-        } else {
-            html.removeAttribute('data-theme');
-        }
+        html.setAttribute('data-theme', theme);
         updateToggleText(theme);
+        localStorage.setItem('theme', theme);
     }
 
-    // Apply saved theme on load
+    // Apply current theme on load
     applyTheme(currentTheme);
 
-    // Listen for system theme changes when in auto mode
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
-        if (!currentTheme) {
-            updateToggleText(null);
-        }
-    });
-
-    // Theme toggle click handler
+    // Simple toggle between light and dark
     themeToggle.addEventListener('click', function () {
-        if (currentTheme === null) {
-            // Auto -> Light
-            currentTheme = 'light';
-        } else if (currentTheme === 'light') {
-            // Light -> Dark
-            currentTheme = 'dark';
-        } else {
-            // Dark -> Auto
-            currentTheme = null;
-        }
-
-        if (currentTheme) {
-            localStorage.setItem('theme', currentTheme);
-        } else {
-            localStorage.removeItem('theme');
-        }
-
+        currentTheme = currentTheme === 'light' ? 'dark' : 'light';
         applyTheme(currentTheme);
     });
 });
