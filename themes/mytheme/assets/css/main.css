@@ -20,3 +20,27 @@ a {
   color: #00e;
   text-decoration: none;
 }
+
+/* Navigation styles */
+.nav-primary {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-right: 1rem;
+}
+
+.nav-item:last-child {
+  margin-right: 0;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #00e;
+  padding: 0.5rem 0;
+}
