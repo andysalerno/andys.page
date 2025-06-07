@@ -96,7 +96,7 @@ a {
   opacity: 0.8;
 }
 
-.theme-toggle:focus {
+theme-toggle:focus {
   outline: 2px solid var(--color-link);
   outline-offset: 2px;
 }
@@ -111,4 +111,22 @@ a {
 
 .header-title {
   flex: 1;
+}
+
+/* Responsive images */
+figure {
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
 }
