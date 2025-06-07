@@ -1,5 +1,23 @@
+/* CSS Variables for theming */
+:root {
+  --color-text: #222;
+  --color-background: #fff;
+  --color-border: #222;
+  --color-link: #00e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #e0e0e0;
+    --color-background: #1a1a1a;
+    --color-border: #404040;
+    --color-link: #66b3ff;
+  }
+}
+
 body {
-  color: #222;
+  color: var(--color-text);
+  background-color: var(--color-background);
   font-family: sans-serif;
   line-height: 1.5;
   margin: 1rem auto;
@@ -7,17 +25,17 @@ body {
 }
 
 header {
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 1rem;
 }
 
 footer {
-  border-top: 1px solid #222;
+  border-top: 1px solid var(--color-border);
   margin-top: 1rem;
 }
 
 a {
-  color: #00e;
+  color: var(--color-link);
   text-decoration: none;
 }
 
@@ -41,6 +59,6 @@ a {
 
 .nav-link {
   text-decoration: none;
-  color: #00e;
+  color: var(--color-link);
   padding: 0.5rem 0;
 }
