@@ -5,8 +5,8 @@ title = "⌨️🤷🏻‍♂️📷"
 theme = "mytheme"
 enableEmoji = true
 hasCJKLanguage = false
-pygmentsstyle = "vs"
-pygmentscodefences = true
+pygmentsUseClasses = true
+pygmentsCodeFences = true
 
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
 
