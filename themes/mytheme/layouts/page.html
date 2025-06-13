@@ -1,0 +1,19 @@
+{{ define "main" }}
+(page.html)
+<article>
+    {{ if ne .Params.showtitle false }}
+    <h1>{{ .Title }}</h1>
+    {{ end }}
+
+
+    {{ if ne .Params.showdate false }}
+    {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+    {{ $dateHuman := .Date | time.Format ":date_long" }}
+    <i><time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time></i>
+    {{ end }}
+
+    {{ .Content }}
+    {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
+</article>
+(/page.html)
+{{ end }}
