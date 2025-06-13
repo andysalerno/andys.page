@@ -13,37 +13,78 @@ const tagLines = [
     'Just married!'
 ];
 
-function setRandomTagline() {
-    const div = document.getElementsByClassName("bonusTagline")[0];
-    const tagLinesCount = tagLines.length;
-    const randInt = getRndInteger(0, tagLinesCount);
+class TaglineAnimator {
+    constructor(containerSelector = '.bonusTagline', options = {}) {
+        this.container = document.querySelector(containerSelector);
+        this.typeSpeed = options.typeSpeed || 60;
+        this.prefix = options.prefix || ' / ';
+        this.timeouts = [];
+        
+        if (!this.container) {
+            console.warn(`TaglineAnimator: Container '${containerSelector}' not found`);
+            return;
+        }
+    }
 
-    const selectedTagLine = tagLines[randInt];
+    getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
 
-    div.innerHTML = ' / ' + selectedTagLine;
-}
+    getRandomTagline() {
+        const randomIndex = this.getRndInteger(0, tagLines.length);
+        return tagLines[randomIndex];
+    }
 
-function typeRandomTagline() {
-    const div = document.getElementsByClassName("bonusTagline")[0];
-    const tagLinesCount = tagLines.length;
-    const randInt = getRndInteger(0, tagLinesCount);
+    clearTimeouts() {
+        this.timeouts.forEach(timeout => clearTimeout(timeout));
+        this.timeouts = [];
+    }
 
-    const selectedTagLine = tagLines[randInt];
+    setTagline(tagline) {
+        if (!this.container) return;
+        this.clearTimeouts();
+        this.container.textContent = this.prefix + tagline;
+    }
 
-    const charArray = Array.from(selectedTagLine);
+    typeTagline(tagline) {
+        if (!this.container) return;
+        
+        this.clearTimeouts();
+        this.container.textContent = this.prefix;
 
-    div.innerHTML += ' / ';
+        for (let i = 0; i <= tagline.length; i++) {
+            const timeout = setTimeout(() => {
+                if (this.container) {
+                    this.container.textContent = this.prefix + tagline.substring(0, i);
+                }
+            }, i * this.typeSpeed);
+            
+            this.timeouts.push(timeout);
+        }
+    }
 
-    for (let i = 0; i < selectedTagLine.length; i++) {
-        setTimeout(() => {
-            div.innerHTML = ' / ' + selectedTagLine.substring(0, i + 1);
-        }, i * 60);
+    animateRandomTagline() {
+        const selectedTagline = this.getRandomTagline();
+        this.typeTagline(selectedTagline);
+    }
+
+    destroy() {
+        this.clearTimeouts();
     }
 }
 
-function getRndInteger(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
+// Initialize when DOM is ready
+function initTaglineAnimation() {
+    const animator = new TaglineAnimator();
+    animator.animateRandomTagline();
+    
+    // Store reference globally for potential cleanup
+    window.taglineAnimator = animator;
 }
 
-// setRandomTagline();
-typeRandomTagline();
+// Run when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTaglineAnimation);
+} else {
+    initTaglineAnimation();
+}
