@@ -1,16 +1,32 @@
 {{- with resources.Get "js/main.js" }}
-  {{- $opts := dict
-    "minify" (not hugo.IsDevelopment)
-    "sourceMap" (cond hugo.IsDevelopment "external" "")
-    "targetPath" "js/main.js"
-  }}
-  {{- with . | js.Build $opts }}
-    {{- if hugo.IsDevelopment }}
-      <script src="{{ .RelPermalink }}"></script>
-    {{- else }}
-      {{- with . | fingerprint }}
-        <script src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous"></script>
-      {{- end }}
-    {{- end }}
-  {{- end }}
+{{- $opts := dict
+"minify" (not hugo.IsDevelopment)
+"sourceMap" (cond hugo.IsDevelopment "external" "")
+"targetPath" "js/main.js"
+}}
+{{- with . | js.Build $opts }}
+{{- if hugo.IsDevelopment }}
+<script src="{{ .RelPermalink }}"></script>
+{{- else }}
+{{- with . | fingerprint }}
+<script src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous"></script>
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- with resources.Get "js/shuffle-message.js" }}
+{{- $opts := dict
+"minify" (not hugo.IsDevelopment)
+"sourceMap" (cond hugo.IsDevelopment "external" "")
+"targetPath" "js/shuffle-message.js"
+}}
+{{- with . | js.Build $opts }}
+{{- if hugo.IsDevelopment }}
+<script src="{{ .RelPermalink }}" defer></script>
+{{- else }}
+{{- with . | fingerprint }}
+<script src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous" defer></script>
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
