@@ -11,7 +11,7 @@ pygmentsCodeFences = true
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
 
 [params]
-  sitename = "Andy, xor Andrew"
+  sitename = "debug time"
   tagline = "Professional software developer / hobbyist street photographer"
   faviconfile = "images/favicon.png"
   highlightjs = false
@@ -27,10 +27,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\
     url = "/about/"
     weight = 2
 [[menu.primary]]
-    name = "Reading List"
-    url = "/readinglist/"
-    weight = 3
-[[menu.primary]]
     name = "GitHub"
     url = "https://github.com/andysalerno"
     weight = 4
@@ -39,7 +35,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\
     url = "https://www.flickr.com/photos/andysalerno/"
     weight = 6
 [[menu.primary]]
-    name = "Rss (there are dozens of us!)"
+    name = "Rss"
     url = "/index.xml"
     weight = 7
 
