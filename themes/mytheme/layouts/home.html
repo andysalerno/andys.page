@@ -1,9 +1,9 @@
 {{ define "main" }}
 {{ .Content }}
-{{ range site.RegularPages }}
-<article class="post-item">
+{{ range (where site.RegularPages "Section" "posts") }}
+<div class="post-item">
     <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
     <time datetime="{{ .Date.Format " 2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
-</article>
+</div>
 {{ end }}
 {{ end }}
