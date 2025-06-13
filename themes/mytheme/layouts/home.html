@@ -2,8 +2,8 @@
 {{ .Content }}
 {{ range (where site.RegularPages "Section" "posts") }}
 <article class="post-item">
-    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-    <time datetime="{{ .Date.Format " 2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
+    <i><time datetime="{{ .Date.Format " 2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time></i>
+    <h2 class="post-list-title"><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
 </article>
 {{ end }}
 {{ end }}

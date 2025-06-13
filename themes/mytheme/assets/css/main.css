@@ -56,6 +56,10 @@ a {
   text-decoration: none;
 }
 
+.post-list-title {
+  margin-top: 0;
+}
+
 /* Navigation styles */
 .nav-primary {
   display: flex;
