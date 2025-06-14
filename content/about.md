@@ -9,7 +9,7 @@ showtitle: false
 
 I'm Andy Salerno. 
 
-I'm a software developer, currently [building Copilot Studio at Microsoft.](https://dynamics.microsoft.com/en-us/connected-spaces/overview/)*
+I'm a software developer, currently [building Copilot Studio at Microsoft.](https://www.microsoft.com/en-us/microsoft-copilot/microsoft-copilot-studio)*
 
 Things that interest me: programming languages with strong guarantees 🦀, open source, street photography, coffee.
 
