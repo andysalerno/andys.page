@@ -4,17 +4,41 @@ date: 2025-06-14T15:17:28-07:00
 draft: true
 ---
 
-*bzzzzzz*
+There was a moment sometime in mid-2022 where it seemed like we had entered a sci-fi
 
-Do you hear that?
+There was a moment sometime in mid-2022, post-GPT3, where 
 
-*bzzzzzzzzzz*
+As a developer, it felt like a new programming primative was unlocked. For 60 years, we got by with if-statements, loops, a call stack, arithmatic operations, etc, and those got us pretty far (given enough compute power any sufficiently advanced species will invent Uber)(PowerPoint, the Space Shuttle, Uber). But suddenly it seemed like we had an entirely new programming primative: the ability to *reason*. 
 
-I used to hate that sound. That's the sound of GPU coils whining.
+// the below section kinda sucks actually
+Before, one might write code such as
 
-It used to mean I just set my video game to ultra-high quality mode.
+`if (user_input.contains("reset password")) { ... }`.
 
-Now it means my computer is *thinking*! Like, 
+Now, we could write code such as
+
+`if (llm("Does the user intend to reset their password?", user_input)) { ... }`.
+
+The introduction of LLMs has ushered in a kind of gold-rush of development 
+
+Today, we find ourselves halfway through 2025, and a question on the forefront of many minds is: *where's the magic?*
+
+Where are the magical experiences that seemed so inevitable at the advent of LLMs?
+
+"Apple AI" has been continuously delayed. Crummy customer-service chatbots abound (for better or worse). It's been X years since the "hole supervisor" greentext and yet we still can't X.
+
+When OpenAI released GPT 4o with voice, I showed it to my mom, expecting to blow her mind, her reaction was: "I like Siri better, Siri can tell me the weather".
+
+I think the answer is somewhere between the following:
+
+1. creating excellent LLM-powered applications is harder than everyone expected
+1. "XYZ but with AI" is not actually guaranteed to be a winning strategy
+1. Truly transformative experiences will only seem obvious in hindsight
+
+I'm sure I'm not the first to be reminded of the earliest iPhone apps (iBeer).
+
+In this blog post, I want to highlight a few LLM applications that I think *are* magical. I think they got it right.
+
 
 ## Infinite Craft
 
@@ -41,6 +65,12 @@ After a conversation with Auren, Chatting with a "vanilla" LLM such as Gemini or
 ## NotebookLM
 
 blah
+
+## Nano
+
+Let me introduce you to Nano!
+
+Nano is the creation of a VTuber named JamsVirtual. 
 
 ## Conclusions
 
