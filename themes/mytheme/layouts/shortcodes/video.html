@@ -1,0 +1,7 @@
+<div class="centered">
+    <video class="w-50" preload='{{ .Get "preload" }}' {{ if ne (.Get "controls" ) "false" }}controls {{ end }} {{ if eq
+        (.Get "autoplay" ) "true" }}autoplay {{ end }} {{ if eq (.Get "loop" ) "true" }}loop {{ end }}>
+        <source src='{{ .Get "src" }}' type='{{ .Get "type" }}'>
+        No webm support?
+    </video>
+</div>

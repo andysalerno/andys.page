@@ -48,6 +48,20 @@ This was the first LLM-powered experience that, to me, felt truly magical.
 
 And it had nothing to do with bots, agents, assistants, or code-completion.
 
+In fact, the reason I like Infinite Craft is precisely because it's none of those things. It's a fantastic example proving the reasoning ability of LLMs can power experiences beyond chatbots.
+
+For the uninitiated: in Infinite Craft, you begin with an empty canvas, and four word: water, fire, wind, earth.
+
+From those four words, what you can create is... well, infinite. Drag "water" onto "fire" and get "steam". Then "steam" plus "wind" make "cloud". "Cloud" plus "earth" makes "Rain".
+
+And obviously, to craft the word "internet", all you need is:
+
+{{< video src="assets/infinite-craft-vid.webm" preload="auto" controls="false" type="video/webm" autoplay="true" loop="true" >}}
+
+{{< figure src="assets/infinite-craft-recipe.png" width="50%" class="centered" >}}
+
+You might argue that Infinite Craft could have existed before LLMs, using single-purpose models or simple embeddings for "adding" two words. But I think such an approach 1) it wouldn't be quite as clever (shark + tornado = sharknado!) and 2) it's missing the point, which is: Neal made this 
+
 ## Auren
 
 *[Auren, Elysian Labs, 2025](https://auren.app/)*
@@ -66,11 +80,15 @@ After a conversation with Auren, Chatting with a "vanilla" LLM such as Gemini or
 
 blah
 
+(share a mp3 of a podcast, that should be all you need to see hehe)
+
 ## Nano
 
 Let me introduce you to Nano!
 
-Nano is the creation of a VTuber named JamsVirtual. 
+Nano is the creation of a VTuber named JamsVirtual.
+
+I need to give you a brief introduction to another of my passions: VTubers. Niche VTubers, in particular. (there's a difference; popular/corporate VTubers are already taking over the mainstream). VTubing captures all the expressive energy and chaos of the underground personal websites from the early internet (think Geocities, Angelfire, or even user boards). The "welcome to my website" of 2025 is "welcome to my channel". Like the personal websites of the early internet, VTubing is all about personal expression, shared interests, and community. To be a VTuber is to be a projection of yourself while preserving your anonymity.
 
 ## Conclusions
 
