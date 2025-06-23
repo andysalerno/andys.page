@@ -6,4 +6,6 @@ draft: true
 
 Testing
 
+{{< script >}}
+
 {{< ytradio >}}
