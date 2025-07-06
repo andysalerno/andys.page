@@ -487,6 +487,6 @@ figure>img {
   }
 }
 
-.ytplayer {
+/* #player-container {
   pointer-events: none;
-}
+} */

@@ -3,7 +3,7 @@ let songs = [];
 let current = 0;          // index of the song we're on
 let player = null;        // YT.Player instance
 
-alert('hi!');
+console.log('starting...');
 
 fetch('songs.json')
     .then(res => res.json())
@@ -17,10 +17,14 @@ function loadYouTubeAPI() {
     document.head.appendChild(tag);
     // The API will call this global when it’s ready:
     window.onYouTubeIframeAPIReady = initPlayer;
+
+    console.log('YouTube API script injected');
 }
 
 /* -------- 3) Create the player & start first song -------- */
 function initPlayer() {
+    console.log('initializing player...');
+
     if (!songs.length) { console.warn('No songs found'); return; }
 
     player = new YT.Player('player-container', {
