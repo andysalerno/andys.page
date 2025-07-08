@@ -1,7 +1,7 @@
 ---
 title: "LLMs Are Magic - Their Applications Should Be, Too"
-date: 2025-06-14T15:17:28-07:00
-draft: true
+date: 2025-07-07T15:17:28-07:00
+draft: false
 ---
 
 Three years ago, it seemed absolutely certain (to me at least) that
