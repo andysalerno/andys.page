@@ -128,17 +128,17 @@ figure {
   margin: 1rem 0;
 }
 
-figure img {
+/* figure img {
   max-width: 100%;
   height: auto;
   display: block;
-}
+} */
 
 /* Ensure all images are responsive */
-img {
+/* img {
   max-width: 100%;
   height: auto;
-}
+} */
 
 /* Code and syntax highlighting styles */
 /* CSS variables for code styling */
@@ -428,3 +428,65 @@ pre code {
   {
   color: var(--syntax-text);
 }
+
+.w-50 {
+  max-width: 50%;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+figure>img {
+  max-width: 100%;
+  /* never wider than the figure */
+  max-height: 100%;
+  /* never taller than the figure */
+  display: block;
+  /* removes the inline-image whitespace gap */
+  height: auto;
+  /* preserves aspect ratio */
+
+  /* If you want a *cropped* fill, swap the next two lines:  */
+  object-fit: contain;
+  /* scales down until it *fits* (no crop)  */
+  /* object-fit: cover;   /* scales up/down and crops to fill area */
+}
+
+/* --------  default / large screens  -------- */
+.centered img {
+  width: 50%;
+  /* scales with the figure */
+  max-width: 100%;
+  /* never overflow */
+  height: auto;
+  /* keep aspect ratio */
+}
+
+.centered>video {
+  width: 50%;
+  /* scales with the figure */
+  max-width: 100%;
+  /* never overflow */
+  height: auto;
+  /* keep aspect ratio */
+}
+
+/* --------  phones / small screens  -------- */
+@media (max-width: 600px) {
+
+  /* pick the breakpoint you like */
+  .centered img {
+    width: 100%;
+  }
+
+  .centered>video {
+    width: 100%;
+  }
+}
+
+/* #player-container {
+  pointer-events: none;
+} */
