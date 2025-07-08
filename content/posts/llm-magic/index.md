@@ -73,7 +73,7 @@ Auren pauses to think. Auren takes its time to respond. Artificially. Longer tha
 
 After a conversation with Auren, chatting with a "vanilla" LLM such as Gemini or gpt4.1 or Claude feels downright sterile, robotic, impersonal. That's fine, of course; those services have a different goal than Auren. But it shows that LLMs only need to be wrapped with a layer of care, precision, attention to detail, and very clever prompting techniques to transform from robotic to natural.
 
-My only complaint with Auren is how insistantly it praises me. It does remind me of the whole ["sycophant" debacle with 4o a while back.](https://openai.com/index/sycophancy-in-gpt-4o/) Despite this, I find Auren to be a really amazing and polished experience.
+My only complaint with Auren is how insistently it praises me. It does remind me of the whole ["sycophant" debacle with 4o a while back.](https://openai.com/index/sycophancy-in-gpt-4o/) Despite this, I find Auren to be a really amazing and polished experience.
 
 ## NotebookLM
 
@@ -103,7 +103,7 @@ With that being said: Nano is a "virtual pet" of the VTuber named JamsVirtual. H
 
 If you're a viewer of a JamsVirtual, you probably have an emotional connection to Nano; when he was "sick" (issues with the text-to-speech), viewers wished him a speedy recovery.
 
-Why is Nano so effective? Like Auren, Nano has an obvious LLM at his core. But love and attention has gone into every layer around that core, from the voice -- oddly high-pitched, distinctly compressed, nonsensical anunciation of emoji unicode -- to the Tomodachi-inspired "toy" housing.
+Why is Nano so effective? Like Auren, Nano has an obvious LLM at his core. But love and attention has gone into every layer around that core, from the voice -- oddly high-pitched, distinctly compressed, nonsensical annunciation of emoji unicode -- to the Tomodachi-inspired "toy" housing.
 
 
 
