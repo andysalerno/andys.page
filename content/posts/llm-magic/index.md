@@ -9,11 +9,11 @@ Three years ago, it seemed absolutely certain (to me at least) that
 1. LLMs would continue to get even better and better, and
 2. LLMs would soon power just about every digital experience in our lives.
 
-Only one of those turned out to be true. Three years later, LLMs are smarter than ever. They can reason, they can generate images and videos (either natively or with a bridge to another model). They're fast, and getting faster; cheap, and getting cheaper; smart, and... you get it.
+Only one of those turned out to be true. Three years later, LLMs are smarter than ever. They can reason, they can generate images and videos (either natively or with a bridge to another model). They're fast and getting faster; cheap and getting cheaper; smart, and... you get it.
 
 And yet... they're still just chatbots. Mostly.
 
-How can this be? An LLM is like a new computing primitive. It's like a new function in the standard library of computing has appeared called `reason`. And the best we can do with this is chatbots??
+How can this be? An LLM is like a new computing primitive. It's as though a new function called `reason` has appeared in the standard library of computing. And the best we can do with it is chatbots??
 
 *Where's the magic??*
 
