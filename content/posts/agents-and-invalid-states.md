@@ -98,6 +98,12 @@ In this approach--hold on. I see a hand raised. Yes?
 
 Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge.
 
+That's what I'll talk about now.
+
+*Glad you're finally getting to the point.*
+
+Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so it's probably for the best if you don't butt in again.
+
 ## Code example
 
 ## Agent example
