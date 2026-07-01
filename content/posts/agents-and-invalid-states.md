@@ -88,7 +88,7 @@ First let's consider the pre-agentic approach, where **code drives the LLM.** Th
 - In the next stage, it loops over the previously-discovered sections, and for each one, asks the LLM to discover relevant **pages** for that section (just the title, no wiki content). Breaks early if `max_pages_per_section` is reached.
 - Finally, it loops over each empty page, and for each one, asks the LLM to fill in the wiki page content.
 
-This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works.
+This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program.
 
 ## Flip the script
 
@@ -104,7 +104,7 @@ That's what I'll talk about now.
 
 *Glad you're finally getting to the point.*
 
-Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so it's probably for the best if you don't butt in again.
+Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so it's probably better if you don't butt in again.
 
 ## Code example
 
