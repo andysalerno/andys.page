@@ -88,6 +88,16 @@ First let's consider the pre-agentic approach, where **code drives the LLM.** Th
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works.
 
+## Flip the script
+
+Now, let's invert the control flow, and talk about the agentic approach, where **the LLM drives the code.**
+
+In this approach--hold on. I see a hand raised. Yes?
+
+*Um, hi. If the above approach works, why even bother with the agentic approach?*
+
+Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge.
+
 ## Code example
 
 ## Agent example
