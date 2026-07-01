@@ -16,6 +16,8 @@ First, some old-school code examples. Feel free to skip them if you already get 
 
 ## Some (contrived) examples
 
+Ways you might "make invalid states unrepresentable":
+
 - In some programming languages, null reference exceptions are made impossible by treating nullable references as entirely different types from non-nullable references.
 
 - If a purchase order can only be "accepted", "rejected", or "pending", you can represent this with a closed enum instead of a string ("stringly typed"), and it becomes impossible for callers to provide an invalid value.
