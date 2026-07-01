@@ -10,8 +10,6 @@ Like all maxims in computer science, [one could debate the usefulness of this ru
 
 Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that the failure state is not merely an edge case but *provably impossible*.
 
-And this idea applies at all levels of the stack, all areas of systems architecture.
-
 Lately I have noticed that this approach can also be applied to **agents**, in ways that are perhaps unintuitive at first. I will describe some examples below.
 
 First, some old-school code examples. Feel free to skip them if you already get the gist.
@@ -24,9 +22,23 @@ First, some old-school code examples. Feel free to skip them if you already get 
 
 - Say you have a `USERS` table, and all users are required to have email addresses. But, some user accounts are pre-created by their employer, before the email address is known. In such cases, users provide the email address upon first sign-in. Instead of allowing the `email` field to be nullable, you can have an entirely separate table `PENDING_USERS` which allows null emails, and only create the real `USERS` entry once the email is known upon first sign-in. You just eliminated the possibility that a `USER` may be missing an email address; such a state is unrepresentable, since `email` is `NOT NULL` on `USERS`.
 
-Maybe those examples are obvious, boring, unexciting. So let's move on to agents.
+Maybe those examples are obvious, boring, even common sense. So let's move on to agents.
 
-## Boxing agents in with strict guarantees
+## "Make no mistakes"
+
+There are two general approaches when designing LLM-powered solutions:
+
+1. The code drives the llm.
+2. The llm drives the code.
+
+The former was common in the early days. Think: langchain, semantic kernel, old-school OpenAI SDK. In this approach, you write "traditional" code, which calls into LLMs when it's time to make a decision. You control the loop, you control the... well, the control flow.
+
+The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose. The agent owns the loop, decides what to do, decides when to stop.
+
+Apologies for the Agents 101. My audience surely is familiar with these concepts. But I wanted to outline it explicitly, to set up this thought experiment:
+
+Say you wanted to auto-generate a technical wiki for a given codebase. Basically, [DeepWiki](https://deepwiki.com/). How would you do this?
+
 
 
 ## Code example
