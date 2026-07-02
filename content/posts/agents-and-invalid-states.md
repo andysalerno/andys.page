@@ -41,7 +41,7 @@ The latter is becoming the norm, now that everything is "agentic". Think: Claude
 
 Apologies for the Agents 101. My audience surely is familiar with these concepts. But I wanted to outline it explicitly, to set up this thought experiment:
 
-Say you wanted to auto-generate a technical wiki for a given codebase. Basically, create [DeepWiki](https://deepwiki.com/). How would you do this?
+Say you wanted to auto-generate a technical wiki for any given codebase. Basically, implement [DeepWiki](https://deepwiki.com/). How would you do this?
 
 Well, first let's define what a "wiki" is. For our purposes, an example "wiki" might look like this:
 
@@ -63,10 +63,10 @@ wiki/
 
 - There's always a top-level `OVERVIEW.md` page which is a landing page for the entire wiki.
 - There are "sections" which are folders that group relevant wiki pages by logical systems or concepts (e.x. `user-management-service/`)
-- Each "section" also has an `OVERVIEW.md` which is the landing page for that section.
+- Each "section" also has an `OVERVIEW.md` which is the landing page for that section (basically an index).
 - Each "section" has "pages" which are are the markdown files that contain the wiki content.
 
-On top of that, let's say wiki generation is **configurable**. A config file for a wiki might look like:
+On top of that, let's say wiki generation is **configurable**. A config file for our wiki-generator system might look like this:
 
 ```yaml
 # wiki-config.yaml
@@ -79,15 +79,16 @@ default_sections:
     description: Explains the startup, shutdown, and deployment process
 ```
 
-Basically, we enforce some parameters (max sections, max pages per section) and allow certain sections to be user-defined such that the resulting wiki will always include them (not leaving it up to the LLM to decide).
+Basically, we may enforce some parameters (max sections, max pages per section) and allow certain sections to be user-defined such that the generated wiki will always include them (not leaving it up to the LLM to decide).
 
-First let's consider the pre-agentic approach, where **code drives the LLM.** This is relatively straightforward. I can tell you from experience: eventually you will settle on a solution like the following, using something like the OpenAI SDK:
+First, let's consider the pre-agentic approach, where **code drives the LLM.** This is relatively straightforward. I can tell you from experience: eventually you will settle on a solution like the following, using something like the OpenAI SDK:
 
 - You have a Python program that calls into an LLM.
 - Your program parses the yaml config file.
-- It pre-populates any `default_sections` from the config, so they already exist before we even touch an LLM.
-- The code proceeds through multiple stages. First, it invokes the LLM, asking it to read the target codebase and identify logical **sections**. It loops on this until the LLM finds no additional sections, OR the `max_sections` count is reached.
-- In the next stage, it loops over the previously-discovered sections, and for each one, asks the LLM to discover relevant **pages** for that section (just the title, no wiki content). Breaks early if `max_pages_per_section` is reached.
+- It maintains an internal state representation of the wiki, basically a data model representing the filesystem layout shown above.
+- In this internal state, it pre-populates any `default_sections` from the config, so they already exist before we even touch an LLM.
+- The code proceeds through multiple stages. First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which adds a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined.
+- In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to discover relevant **pages** for that section (just the title, no wiki content). Same approach as before: we give it filesystem tools, and a tool like "add_page".
 - Finally, it loops over each empty page, and for each one, asks the LLM to fill in the wiki page content.
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program.
