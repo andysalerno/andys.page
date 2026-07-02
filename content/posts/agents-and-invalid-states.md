@@ -4,9 +4,11 @@ date: 2026-07-01T12:49:53-07:00
 draft: true
 ---
 
+*This blog post was written by me, a human (as evidenced by how long it takes to get to the point). If you want to skip straight to the main idea I'm proposing, scroll to The Point.*
+
 There is an old saying: ***make invalid states unrepresentable***.
 
-Like all maxims in computer science, [one could debate the usefulness of this rule](https://www.seangoedecke.com/invalid-states/). Maybe you read it and think: *Yes! Exactly!* Or maybe you read it and recall a time as a junior dev, when a senior dev ruined your Friday by commenting on your PR with these four words.
+Like all maxims in computer science, [one could debate its usefulness](https://www.seangoedecke.com/invalid-states/). Maybe you read it and think: *Yes! Exactly!* Or maybe you read it and recall a time as a junior dev, when a senior dev ruined your Friday by commenting on your PR with these four words.
 
 Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that certain failure states are not merely edge cases but *provably impossible*.
 
@@ -20,7 +22,7 @@ Ways you might "make invalid states unrepresentable":
 
 - In some programming languages, null reference exceptions are made impossible by treating nullable references as entirely different types from non-nullable references.
 
-- If a purchase order can only be "accepted", "rejected", or "pending", you can represent this with a closed enum instead of a string ("stringly typed"), and it becomes impossible for callers to provide an invalid value.
+- If a purchase order can only be "accepted", "rejected", or "pending", you can represent this with a closed enum instead of a string (so it is not "stringly typed"), and it becomes impossible for callers to provide an invalid value.
 
 - Say you have a `USERS` table, and all users are required to have email addresses. But, some user accounts are pre-created by their employer, before the email address is known. In such cases, users provide the email address upon first sign-in. Instead of allowing the `email` field to be nullable, you can have an entirely separate table `PENDING_USERS` which allows null emails, and only create the real `USERS` entry once the email is known upon first sign-in. You just eliminated the possibility that a `USER` may be missing an email address; such a state is unrepresentable, since `email` is `NOT NULL` on `USERS`.
 
@@ -28,14 +30,14 @@ Maybe those examples are obvious, boring, even common sense. So let's move on to
 
 ## "Make no mistakes"
 
-There are two general approaches when designing LLM-powered solutions:
+I'd say there are two general approaches when designing LLM-powered solutions:
 
-1. The code drives the llm.
-2. The llm drives the code.
+1. The code drives the LLM.
+2. The LLM drives the code.
 
-The former was common in prehistoric times (~2023). Think: langchain, semantic kernel, old-school OpenAI SDK. In this approach, you write "traditional" code, which calls into LLMs when it's time to make a decision. You control the loop, you control the... well, the control flow.
+The former was common in prehistoric times (~2023). Think: langchain, semantic kernel, old-school OpenAI SDK. In this approach, you write "traditional" code, which calls into LLMs when it's time to make a decision. You control the loop, you control the... well, the control flow. Your code drives the LLM.
 
-The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose. The agent owns the loop, decides what to do, decides when to stop.
+The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, the latest framework-du-jour, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose on a task. The agent owns the loop, decides what to do, decides when to stop. There isn't strictly a "program" being executed; at each step, the next step is decided on the fly by the agent. The LLM drives *your* code, invokes *your* tools... if it chooses.
 
 Apologies for the Agents 101. My audience surely is familiar with these concepts. But I wanted to outline it explicitly, to set up this thought experiment:
 
