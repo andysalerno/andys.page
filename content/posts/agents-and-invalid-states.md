@@ -109,6 +109,16 @@ That's what I'll talk about now.
 
 Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so I kindly ask you do not interrupt again.
 
-## Code example
+## Agent example (aka The Point)
 
-## Agent example
+Consider the exact same problem described above: create a system that generates a technical wiki for a given codebase. (Again, like [DeepWiki.](https://deepwiki.com/))
+
+This time, imagine you're using a harness like Claude Code, or Codex, or OpenClaw. What would you do?
+
+*I know! Skills!*
+
+...
+
+*Don't get mad at me, get mad at [Amos Wenger](https://fasterthanli.me/). They're the one who popularized Socratic dialogue in blog post explainers. It's quite effective.*
+
+...Skills. Sure, you might use skills.
