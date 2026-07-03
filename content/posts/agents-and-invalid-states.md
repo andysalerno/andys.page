@@ -189,6 +189,7 @@ USAGE
     wiki.py list-sections
     wiki.py list-pages [SECTION_NAME ...]
     wiki.py show-config # prints config values like max_sections etc
+    wiki.py validate # runs all validations on the state
     wiki.py render-to-filesystem # transforms state.yaml to markdown files on disk
     wiki.py status # prints a status report tracking progress
     ...
@@ -199,8 +200,7 @@ A helpful command `status` will show overall progress and guide the agent along:
 ```
 $ wiki.py status
 Sections discovered: 12/12 (stage complete)
-Current stage: page discovery for section 'User Management'
-Pages discovered: 2/3
+Current task: page discovery for section 'User Management'
 
 - [x] Discover sections
 - [-] Page discovery (in progress)
