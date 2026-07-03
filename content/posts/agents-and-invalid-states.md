@@ -137,7 +137,7 @@ Notice something? These types of failures are *entirely preventable by code.* In
 
 How can we get these same guarantees, but in the agent-first approach?
 
-Well, in truth, we can't -- after all, the agent could always respond with "I'm tired, I don't feel like doing it." So we can never have the same level of certainty with agents as we can with code.
+Well, in truth, we can't -- after all, the agent could always respond with "I'm tired, I don't feel like doing it," which is something I have never seen a Python program do. So we can never have the same level of certainty with agents as we can with code.
 
 But we can get pretty damn close!
 
