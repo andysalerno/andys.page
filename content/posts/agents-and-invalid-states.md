@@ -113,7 +113,7 @@ Please don't talk without raising your hand, and also we're too deep into this b
 
 Consider the exact same problem described above: create a system that generates a technical wiki for a given codebase, as Markdown files. (Again, like [DeepWiki.](https://deepwiki.com/))
 
-This time, imagine you're using a harness like Claude Code, or Codex, or OpenClaw. What would you do?
+This time, imagine you're using an agentic harness like Claude Code, or Codex, or OpenClaw. What would you do?
 
 A completely valid first attempt would be: just tell the agent to write a wiki for the codebase. That's it.
 
@@ -122,3 +122,20 @@ And I encourage you to try this. Maybe it even works, if the codebase is small e
 But I've been down this path. You launch the agent. The resulting wiki is too short. You update the instructions, telling it to write more pages. You launch the agent. Now there are more pages, but each page is only two paragraphs. You update the instructions. You launch the agent. Now the wiki lacks mermaid diagrams. You add to the instructions. You launch the agent. Now the mermaid diagrams look good, but it's missing a section for a crucial library in your codebase. You start to wonder how this same model solved an Erdős problem.
 
 Okay, maybe it didn't work. But we didn't even try skills yet. Or subagents. Or MCP servers! Or [Ralph Wiggum](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)!
+
+Sure, we can try all those things. But first I want you to think about the types of failures we are seeing:
+
+- Pages too short.
+- Not enough pages.
+- Not enough sections.
+- Broken links.
+- Areas of the codebase not covered by the wiki.
+- Config values ignored (`max_sections`, `max_pages_per_section`, from the previous example).
+
+Notice something? These types of failures are *entirely preventable by code.* In the previous (code-first) example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because we can loop until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
+
+How can we get these same guarantees, but in the agent-first approach?
+
+Well, in truth, we can't -- after all, the agent could always respond with "I'm tired, I don't feel like doing it." So we can never have the same level of certainty with agents as we can with code.
+
+But we can get pretty damn close!
