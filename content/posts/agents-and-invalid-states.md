@@ -170,7 +170,7 @@ $ wiki.py add-section "User Management"
 Error: cannot add section; max of 10 sections already added. Move on to page creation.
 ```
 
-Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be more easily forgotten.
+Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is only handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be more easily forgotten.
 
 By now, everyone knows **agents like CLIs**. So, of course the program has a nice help output:
 
@@ -200,7 +200,26 @@ $ wiki.py render-to-filesystem
 Error: not ready to write to filesystem. The following validations failed:
 - Page user-management/user-creation-flow.md is too short; currently 8789 chars, minimum is 10000.
 - Page control-plane/storage-backends.md contains invalid markdown link on line 47.
-- Codebase directory src/internal/data-models/ is not covered by any page
+- Codebase directory src/internal/data-models/ is not covered by any page.
 ```
 
-> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still craft a wiki.yaml state file that has more sections than `max_sections`. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1. I think you could allow that the outcome is close enough to 'unrepresentable', and 2. it's too late to change the title of the blog post now.*
+> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a wiki.yaml state file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
+
+Of course, handing the agent a CLI isn't enough to explain *what it's supposed to do*. We still need instructions (generally agent or skill definitions). I landed on a solution like this:
+
+```
+.agents/
+  agents/
+    wiki-writer.md # our "entrypoint"; instructions for invoking the below skills, and general CLI usage tips
+  skills/
+    section-discovery/SKILL.md # specific info related to section discovery
+    page-discovery/SKILL.md # specific info related to page discovery
+    page-writing/SKILL.md # specific info related to writing wiki content
+```
+
+In the above, explain things such as:
+- the general task (writing a wiki).
+- the existence of the `wiki.py` cli tool.
+- the recommended stages: section discovery, then page discovery, then page filling.
+
+What we *don't* have to do is enumerate a massive section of rules and guidelines. The cli tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
