@@ -4,7 +4,7 @@ date: 2026-07-01T12:49:53-07:00
 draft: true
 ---
 
-*This blog post was written by me, a human (as evidenced by how long it takes to get to the point). If you want to skip straight to the main idea I'm proposing, scroll to The Point.*
+*This blog post was written by me, a human (as evidenced by how long it takes to explain a simple idea). If you want to skip straight to the main idea I'm proposing, scroll to The Point.*
 
 There is an old saying: ***make invalid states unrepresentable***.
 
@@ -12,7 +12,7 @@ Like all maxims in computer science, [one could debate its usefulness](https://w
 
 Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that certain failure states are not merely edge cases but *logically impossible*.
 
-Lately I have noticed that this approach can also be applied to **agents**, in ways that are perhaps unintuitive at first. I will describe some examples below.
+Lately I have noticed that this approach can also be applied to **agents**, massively increasing their reliability for many tasks. I will describe some examples below.
 
 First, some old-school code examples. Feel free to skip them if you already get the gist.
 
@@ -37,7 +37,7 @@ I'd say there are two general approaches when designing LLM-powered solutions:
 
 The former was common in prehistoric times (~2023). Think: langchain, semantic kernel, old-school OpenAI SDK. In this approach, you write "traditional" code, which calls into LLMs when it's time to make a decision. You control the loop, you control the... well, the control flow. Your code drives the LLM.
 
-The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, the latest framework-du-jour, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose on a task. The agent owns the loop, decides what to do, decides when to stop. There isn't strictly a "program" being executed; at each step, the next step is decided on the fly by the agent. The LLM drives *your* code, invokes *your* tools... if it chooses.
+The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, the latest harness-du-jour, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose on a task. The agent owns the loop, decides what to do, decides when to stop. There isn't strictly a "program" being executed; at each step, the next step is decided on the fly by the agent. The LLM drives *your* code, invokes *your* tools... if it chooses.
 
 Apologies for the Agents 101. My audience surely is familiar with these concepts. But I wanted to outline it explicitly, to set up this thought experiment:
 
@@ -87,9 +87,10 @@ First, let's consider the pre-agentic approach, where **code drives the LLM.** T
 - The program parses the yaml config file.
 - It maintains an internal state representation of the wiki, basically a data model representing the filesystem layout shown above.
 - In this internal state, it pre-populates any `default_sections` from the config, so they already exist before we even touch an LLM.
-- The code proceeds through multiple stages. First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which adds a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined.
-- In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to discover relevant **pages** for that section (just the title and description, no wiki content). Same approach as before: we give it filesystem tools, and a tool like "add_page".
-- Finally, it loops over each empty page, and for each one, asks the LLM to fill in the wiki page content.
+- The code proceeds through multiple stages. First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic read-only filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which adds a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined by the LLM.
+- In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to discover relevant **pages** for that section (just the title and description, no wiki content). Same approach as before: we give it read-only filesystem tools, and a tool like "add_page" which, when invoked, triggers the code to update its internal state to add a new page.
+- Then, it loops over each empty page, and for each one, asks the LLM to fill in the wiki page content.
+- Finally, when the above is complete, the code renders the internal state to the filesystem. This is when it actually creates the directories ("sections") and markdown files ("pages").
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
 
@@ -201,6 +202,7 @@ Error: not ready to write to filesystem. The following validations failed:
 - Page user-management/user-creation-flow.md is too short; currently 8789 chars, minimum is 10000.
 - Page control-plane/storage-backends.md contains invalid markdown link on line 47.
 - Codebase directory src/internal/data-models/ is not covered by any page.
+- Section user-management is missing an OVERVIEW.md file.
 ```
 
 Of course, handing the agent a CLI isn't enough to explain *what it's supposed to do*. We still need instructions (generally agent or skill definitions). I landed on a solution like this:
