@@ -111,14 +111,14 @@ Please don't talk without raising your hand, and also we're too deep into this b
 
 ## Agent example (aka The Point)
 
-Consider the exact same problem described above: create a system that generates a technical wiki for a given codebase. (Again, like [DeepWiki.](https://deepwiki.com/))
+Consider the exact same problem described above: create a system that generates a technical wiki for a given codebase, as Markdown files. (Again, like [DeepWiki.](https://deepwiki.com/))
 
 This time, imagine you're using a harness like Claude Code, or Codex, or OpenClaw. What would you do?
 
-*I know! Skills!*
+A completely valid first attempt would be: just tell the agent to write a wiki for the codebase. That's it.
 
-...
+And I encourage you to try this. Maybe it even works, if the codebase is small enough! And whenever it makes a mistake (improper markdown link syntax, pages too short, etc), simply update the instructions to nudge the agent towards the desired behavior, and repeat.
 
-*Don't get mad at me, get mad at [Amos Wenger](https://fasterthanli.me/). They're the one who popularized Socratic dialogue in blog post explainers. It's quite effective.*
+But I've been down this path. You launch the agent. The resulting wiki is too short. You update the instructions, telling it to write more pages. You launch the agent. Now there are more pages, but each page is only two paragraphs. You update the instructions. You launch the agent. Now the wiki lacks mermaid diagrams. You add to the instructions. You launch the agent. Now the mermaid diagrams look good, but it's missing a section for a crucial library in your codebase. You start to wonder how this same model solved an Erdős problem.
 
-...Skills. Sure, you might use skills.
+Okay, maybe it didn't work. But we didn't even try skills yet. Or subagents. Or MCP servers! Or [Ralph Wiggum](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)!
