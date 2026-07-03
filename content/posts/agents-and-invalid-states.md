@@ -10,7 +10,7 @@ There is an old saying: ***make invalid states unrepresentable***.
 
 Like all maxims in computer science, [one could debate its usefulness](https://www.seangoedecke.com/invalid-states/). Maybe you read it and think: *Yes! Exactly!* Or maybe you read it and recall a time as a junior dev, when a senior dev ruined your Friday by commenting on your PR with these four words.
 
-Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that certain failure states are not merely edge cases but *provably impossible*.
+Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that certain failure states are not merely edge cases but *logically impossible*.
 
 Lately I have noticed that this approach can also be applied to **agents**, in ways that are perhaps unintuitive at first. I will describe some examples below.
 
