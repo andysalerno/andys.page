@@ -132,10 +132,49 @@ Sure, we can try all those things. But first I want you to think about the types
 - Areas of the codebase not covered by the wiki.
 - Config values ignored (`max_sections`, `max_pages_per_section`, from the previous example).
 
-Notice something? These types of failures are *entirely preventable by code.* In the previous (code-first) example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because we can loop until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
+Notice something? These types of failures are *entirely preventable by code.* In the earlier code-first example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because we can loop until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
 
 How can we get these same guarantees, but in the agent-first approach?
 
 Well, in truth, we can't -- after all, the agent could always respond with "I'm tired, I don't feel like doing it." So we can never have the same level of certainty with agents as we can with code.
 
 But we can get pretty damn close!
+
+The pattern I have landed on is:
+
+**Do NOT allow the agent to interact with the system EXCEPT through a program that you control. This program strictly prohibits operations that would lead to invalid state.**
+
+*Um, what does that mean?*
+
+It means: our wiki agent does NOT write markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml).
+
+Instead, if the agent wants to create a section, it invokes a cli script:
+
+```bash
+$ wiki.py add-section "User Management"
+```
+
+This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same.
+
+What's the output of this command?
+
+```bash
+$ wiki.py add-section "User Management"
+Section added. There are now 8 sections. Max is 10.
+```
+
+And if the agent somehow ignores the above warning and still exceeds the max count:
+
+```bash
+$ wiki.py add-section "User Management"
+Error: cannot add section; max of 10 sections already added. Move on to page creation.
+```
+
+Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is handling the reasoning stuff** (what the name of the section should be).
+
+By now, everyone knows **agents like CLIs**. So, of course the program has a nice help output:
+
+```bash
+$ wiki.py --help
+
+```
