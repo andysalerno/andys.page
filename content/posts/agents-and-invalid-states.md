@@ -203,11 +203,12 @@ Current stage: page discovery for section 'User Management'
 Pages discovered: 2/3
 
 - [x] Discover sections
-- [ ] Page discovery (in progress)
+- [-] Page discovery (in progress)
   - [x] Discover 3/3 pages for section 'Control Plane'
   - [x] Discover 3/3 pages for section 'Service Lifecycle'
   ...
-  - [ ] Discover pages for section 'User Management' (2/3)
+  - [-] Discover pages for section 'User Management' (in progress 2/3)
+- [ ] Page writing (pending)
 ```
 
 When the agent has decided there are enough sections, pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
