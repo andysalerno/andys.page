@@ -111,7 +111,7 @@ Please don't talk without raising your hand, and also we're too deep into this b
 
 ## Agent example (aka The Point)
 
-Consider the exact same problem described above: create a system that generates a technical wiki for a given codebase, as Markdown files. (Again, like [DeepWiki.](https://deepwiki.com/))
+Consider the exact same problem described above: create a system that generates a technical Markdown wiki for a given codebase. (Again, like [DeepWiki.](https://deepwiki.com/))
 
 This time, imagine you're using an agentic harness like Claude Code, or Codex, or OpenClaw. What would you do?
 
@@ -132,7 +132,7 @@ Sure, we can try all those things. But first I want you to think about the types
 - Areas of the codebase not covered by the wiki.
 - Config values ignored (`max_sections`, `max_pages_per_section`, from the previous example).
 
-Notice something? These types of failures are *entirely preventable by code.* In the earlier code-first example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because we can loop until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
+Notice something? These types of failures are *entirely preventable by code.* In the earlier code-first example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because the code loops until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
 
 How can we get these same guarantees, but in the agent-first approach?
 
@@ -146,7 +146,7 @@ The pattern I have landed on is:
 
 *Um, what does that mean?*
 
-It means: our wiki agent does NOT write markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml).
+It means: our wiki agent does NOT write Markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml, or when we launch the harness).
 
 Instead, we give the agent a cli program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes a cli script:
 
@@ -172,7 +172,7 @@ Error: cannot add section; max of 10 sections already added. Move on to page cre
 
 Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is only handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be more easily forgotten.
 
-By now, everyone knows **agents like CLIs**. So, of course the program has a nice help output:
+By now, everyone knows **agents love CLIs**. So, of course the program has a nice help output:
 
 ```
 $ wiki.py --help
@@ -203,8 +203,6 @@ Error: not ready to write to filesystem. The following validations failed:
 - Codebase directory src/internal/data-models/ is not covered by any page.
 ```
 
-> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a wiki.yaml state file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
-
 Of course, handing the agent a CLI isn't enough to explain *what it's supposed to do*. We still need instructions (generally agent or skill definitions). I landed on a solution like this:
 
 ```
@@ -217,9 +215,11 @@ Of course, handing the agent a CLI isn't enough to explain *what it's supposed t
     page-writing/SKILL.md # specific info related to writing wiki content
 ```
 
-In the above, explain things such as:
+In the above, we explain things such as:
 - the general task (writing a wiki).
-- the existence of the `wiki.py` cli tool.
-- the recommended stages: section discovery, then page discovery, then page filling.
+- the existence of the `wiki.py` cli tool, and its basic usage.
+- the recommended flow: first section discovery, then page discovery, then page filling.
 
 What we *don't* have to do is enumerate a massive section of rules and guidelines. The cli tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
+
+> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a wiki.yaml state file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
