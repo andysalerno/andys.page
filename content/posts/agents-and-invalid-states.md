@@ -202,3 +202,5 @@ Error: not ready to write to filesystem. The following validations failed:
 - Page control-plane/storage-backends.md contains invalid markdown link on line 47.
 - Codebase directory src/internal/data-models/ is not covered by any page
 ```
+
+> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still craft a wiki.yaml state file that has more sections than `max_sections`. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1. I think you could allow that the outcome is close enough to 'unrepresentable', and 2. it's too late to change the title of the blog post now.*
