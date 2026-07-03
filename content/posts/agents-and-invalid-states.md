@@ -148,7 +148,7 @@ The pattern I have landed on is:
 
 It means: our wiki agent does NOT write markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml).
 
-Instead, if the agent wants to create a section, it invokes a cli script:
+Instead, we give the agent a cli program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes a cli script:
 
 ```bash
 $ wiki.py add-section "User Management"
@@ -174,7 +174,31 @@ Notice how **the code is handling the deterministic stuff** (how sections are ad
 
 By now, everyone knows **agents like CLIs**. So, of course the program has a nice help output:
 
-```bash
+```
 $ wiki.py --help
+Use this script while you are writing, or updating, a codebase wiki.
+Add sections first, then pages, then page content.
+Use render-to-filesystem when ready to persist to markdown files in the wiki directory layout.
 
+USAGE
+    wiki.py add-section SECTION_NAME
+    wiki.py add-page SECTION_NAME PAGE_NAME
+    wiki.py append-page-content SECTION_NAME PAGE_NAME CONTENT
+    wiki.py list-sections
+    wiki.py list-pages [SECTION_NAME ...]
+    wiki.py show-config # prints config values like max_sections etc
+    wiki.py render-to-filesystem # transforms state.yaml to markdown files on disk
+    ...
+```
+
+When the agent has decided there are enough sections, pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
+
+And it's yet another chance to enforce programmatic guarantees:
+
+```
+$ wiki.py render-to-filesystem
+Error: not ready to write to filesystem. The following validations failed:
+- Page user-management/user-creation-flow.md is too short; currently 8789 chars, minimum is 10000.
+- Page control-plane/storage-backends.md contains invalid markdown link on line 47.
+- Codebase directory src/internal/data-models/ is not covered by any page
 ```
