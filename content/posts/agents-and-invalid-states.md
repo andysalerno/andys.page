@@ -149,13 +149,13 @@ The pattern I have landed on is:
 
 It means: our wiki agent does NOT write Markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml, or when we launch the harness).
 
-Instead, we give the agent a cli program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes a cli script:
+Instead, we give the agent a cli program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes our program, in this example a Python program:
 
 ```bash
 $ wiki.py add-section "User Management"
 ```
 
-This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same.
+This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./wiki_state.yaml`, so it may be used incrementally.
 
 What's the output of this command?
 
@@ -171,7 +171,7 @@ $ wiki.py add-section "User Management"
 Error: cannot add section; max of 10 sections already added. Move on to page creation.
 ```
 
-Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is only handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be more easily forgotten.
+Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is only handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be forgotten.
 
 By now, everyone knows **agents love CLIs**. So, of course the program has a nice help output:
 
@@ -180,6 +180,7 @@ $ wiki.py --help
 Use this script while you are writing, or updating, a codebase wiki.
 Add sections first, then pages, then page content.
 Use render-to-filesystem when ready to persist to markdown files in the wiki directory layout.
+All operations update (or create) a file wiki_state.yaml.
 
 USAGE
     wiki.py add-section SECTION_NAME
@@ -189,7 +190,24 @@ USAGE
     wiki.py list-pages [SECTION_NAME ...]
     wiki.py show-config # prints config values like max_sections etc
     wiki.py render-to-filesystem # transforms state.yaml to markdown files on disk
+    wiki.py status # prints a status report tracking progress
     ...
+```
+
+A helpful command `status` will show overall progress and guide the agent along:
+
+```
+$ wiki.py status
+Sections discovered: 12/12 (stage complete)
+Current stage: page discovery for section 'User Management'
+Pages discovered: 2/3
+
+- [x] Discover sections
+- [ ] Page discovery (in progress)
+  - [x] Discover 3/3 pages for section 'Control Plane'
+  - [x] Discover 3/3 pages for section 'Service Lifecycle'
+  ...
+  - [ ] Discover pages for section 'User Management' (2/3)
 ```
 
 When the agent has decided there are enough sections, pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
