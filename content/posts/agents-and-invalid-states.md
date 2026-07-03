@@ -170,7 +170,7 @@ $ wiki.py add-section "User Management"
 Error: cannot add section; max of 10 sections already added. Move on to page creation.
 ```
 
-Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is handling the reasoning stuff** (what the name of the section should be).
+Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be more easily forgotten.
 
 By now, everyone knows **agents like CLIs**. So, of course the program has a nice help output:
 
