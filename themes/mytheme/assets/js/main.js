@@ -4,13 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const themeToggleText = document.getElementById('theme-toggle-text');
     const html = document.documentElement;
 
-    // Get saved theme preference or determine from system
-    let currentTheme = localStorage.getItem('theme');
-
-    // If no saved preference, detect system preference
-    if (!currentTheme) {
-        currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
+    const savedTheme = localStorage.getItem('theme');
+    let currentTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
 
     // Function to update theme toggle text and aria-label
     function updateToggleText(theme) {
