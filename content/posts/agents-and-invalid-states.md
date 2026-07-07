@@ -37,7 +37,7 @@ I'd say there are two general approaches when designing LLM-powered solutions:
 
 The former was common in prehistoric times (~2023). Think: langchain, semantic kernel, old-school OpenAI SDK. In this approach, you write "traditional" code, which calls into LLMs when it's time to make a decision. You control the loop, you control the... well, the control flow. Your code drives the LLM.
 
-The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, the latest harness-du-jour, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free reign, and you let it loose on a task. The agent owns the loop, decides what to do, decides when to stop. There isn't strictly a "program" being executed; at each step, the next step is decided on the fly by the agent. The LLM drives *your* code, invokes *your* tools... if it chooses.
+The latter is becoming the norm, now that everything is "agentic". Think: Claude Code, OpenClaw, the latest harness-du-jour, etc. In this approach, the LLM operates in a harness (as an "agent") with lots of tools at its disposal. You may provide it with code it can run; whether it actually invokes the code is up to the agent. The agent has free rein, and you let it loose on a task. The agent owns the loop, decides what to do, decides when to stop. There isn't strictly a "program" being executed; at each step, the next step is decided on the fly by the agent. The LLM drives *your* code, invokes *your* tools... if it chooses.
 
 Apologies for the Agents 101. My audience surely is familiar with these concepts. But I wanted to outline it explicitly, to set up this thought experiment:
 
@@ -62,9 +62,9 @@ wiki/
 ```
 
 - There's always a top-level `OVERVIEW.md` page which is a landing page for the entire wiki.
-- There are "sections" which are folders that group relevant wiki pages by logical systems or concepts (e.x. `user-management-service/`)
+- There are "sections" which are folders that group relevant wiki pages by logical systems or concepts (e.g. `user-management-service/`)
 - Each "section" also has an `OVERVIEW.md` which is the landing page for that section.
-- Each "section" has "pages" which are are the markdown files that contain the wiki content.
+- Each "section" has "pages" which are the markdown files that contain the wiki content.
 
 On top of that, let's say wiki generation is **configurable**. A config file for our wiki-generator system might look like this:
 
