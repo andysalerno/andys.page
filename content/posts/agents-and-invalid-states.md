@@ -1,7 +1,6 @@
 ---
 title: "Make invalid states unrepresentable (for your agents)"
-date: 2026-07-01T12:49:53-07:00
-draft: true
+date: 2026-07-07T02:49:53-07:00
 ---
 
 *This blog post was written by me, a human (as evidenced by how long it takes to explain a simple idea). If you want to skip straight to the main idea, scroll to [The Point](#agent-example-aka-the-point).*
