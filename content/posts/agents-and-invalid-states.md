@@ -121,7 +121,7 @@ A completely valid first attempt would be: just tell the agent to write a wiki f
 
 And I encourage you to try this. Maybe it even works, if the codebase is small enough! And whenever it makes a mistake (improper markdown link syntax, pages too short, etc), simply update the instructions to nudge the agent towards the desired behavior, and repeat.
 
-But I've been down this path. You launch the agent. The resulting wiki is too short. You update the instructions, telling it to write more pages. You launch the agent. Now there are more pages, but each page is only two paragraphs. You update the instructions. You launch the agent. Now the wiki lacks mermaid diagrams. You add to the instructions. You launch the agent. Now the mermaid diagrams look good, but it's missing a section for a crucial library in your codebase. You start to wonder how this same model solved an Erdős problem.
+But I've been down this path. You launch the agent. The resulting wiki is too short. You update the instructions, telling it to write more pages. You launch the agent. Now there are more pages, but each page is only two paragraphs. You update the instructions. You launch the agent. Now the wiki lacks Mermaid diagrams. You add to the instructions. You launch the agent. Now the Mermaid diagrams look good, but it's missing a section for a crucial library in your codebase. You start to wonder how this same model solved an Erdős problem.
 
 Okay, maybe it didn't work. But we didn't even try skills yet. Or subagents. Or MCP servers! Or [Ralph Wiggum](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)!
 
@@ -150,26 +150,26 @@ The pattern I have landed on is:
 
 It means: our wiki agent does NOT write Markdown files. It doesn't create folders for wiki sections. It doesn't even have a `file_write` tool (we disable that tool in the agent frontmatter yaml, or when we launch the harness).
 
-Instead, we give the agent a cli program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes our program, in this example a Python program:
+Instead, we give the agent a CLI program, which is the *only* way it may interact with the wiki's state. If the agent wants to create a section, it invokes our program, in this example a Python program:
 
 ```bash
 $ wiki.py add-section "User Management"
 ```
 
-This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./wiki_state.yaml`, so each invocation resumes from the existing state and overwrites it with the new state.
+This updates (and creates, if necessary) a file `state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./state.yaml`, so each invocation resumes from the existing state and overwrites it with the new state.
 
 What's the output of this command?
 
 ```bash
 $ wiki.py add-section "User Management"
-Section added. There are now 8 sections. Max is 10.
+Section added. There are now 8 sections. Max is 12.
 ```
 
 And if the agent somehow ignores the above warning and still exceeds the max count:
 
 ```bash
 $ wiki.py add-section "User Management"
-Error: cannot add section; max of 10 sections already added. Move on to page creation.
+Error: cannot add section; max of 12 sections already added. Move on to page creation.
 ```
 
 Notice how **the code is handling the deterministic stuff** (how sections are added, maintaining the state, running validations), and **the agent is only handling the reasoning stuff** (what the name of the section should be). Also, **the code emits helpful contextual tips** exactly when they are most relevant -- not in a 20k token system prompt where they may be forgotten.
@@ -181,7 +181,7 @@ $ wiki.py --help
 Use this script while you are writing, or updating, a codebase wiki.
 Add sections first, then pages, then page content.
 Use render-to-filesystem when ready to persist to markdown files in the wiki directory layout.
-All operations update (or create) a file wiki_state.yaml.
+All operations update (or create) a file state.yaml.
 Check `wiki.py status` when unsure what to do next.
 
 USAGE
@@ -220,10 +220,10 @@ And it's yet another chance to enforce programmatic guarantees:
 ```
 $ wiki.py render-to-filesystem
 Error: not ready to write to filesystem. The following validations failed:
-- Page user-management/user-creation-flow.md is too short; currently 8789 chars, minimum is 10000.
+- Page user-management-service/user-creation-flow.md is too short; currently 8789 chars, minimum is 10000.
 - Page control-plane/storage-backends.md contains invalid markdown link on line 47.
 - Codebase directory src/internal/data-models/ is not covered by any page.
-- Section user-management is missing an OVERVIEW.md file.
+- Section user-management-service is missing an OVERVIEW.md file.
 ```
 
 Of course, handing the agent a CLI isn't enough to explain *what it's supposed to do*. We still need instructions (generally agent or skill definitions). I landed on a solution like this:
@@ -240,12 +240,12 @@ Of course, handing the agent a CLI isn't enough to explain *what it's supposed t
 
 In the above, we explain things such as:
 - the general task (writing a wiki).
-- the existence of the `wiki.py` cli tool, and its basic usage.
+- the existence of the `wiki.py` CLI tool, and its basic usage.
 - the recommended flow: first section discovery, then page discovery, then page filling.
 
-What we *don't* have to do is enumerate a massive section of rules and guidelines. The cli tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
+What we *don't* have to do is enumerate a massive section of rules and guidelines. The CLI tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
 
-> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a wiki.yaml state file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
+> *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a `state.yaml` file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
 
 ## Agents everywhere
 
