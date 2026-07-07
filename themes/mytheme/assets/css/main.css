@@ -6,16 +6,6 @@
   --color-link: #00e;
 }
 
-/* Dark theme when system preference is dark and no manual override */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --color-text: #e0e0e0;
-    --color-background: #1a1a1a;
-    --color-border: #404040;
-    --color-link: #66b3ff;
-  }
-}
-
 /* Manual theme overrides */
 :root[data-theme="light"] {
   --color-text: #222;
@@ -154,14 +144,6 @@ figure {
   --code-text: #e6edf3;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --code-bg: #161b22;
-    --code-border: #30363d;
-    --code-text: #e6edf3;
-  }
-}
-
 /* Base code styling */
 code {
   padding: 0.2em 0.4em;
@@ -234,19 +216,6 @@ pre code {
   --syntax-function: #d2a8ff;
   --syntax-number: #79c0ff;
   --syntax-builtin: #ffa657;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .highlight {
-    --syntax-bg: var(--code-bg);
-    --syntax-text: var(--code-text);
-    --syntax-comment: #8b949e;
-    --syntax-keyword: #ff7b72;
-    --syntax-string: #a5d6ff;
-    --syntax-function: #d2a8ff;
-    --syntax-number: #79c0ff;
-    --syntax-builtin: #ffa657;
-  }
 }
 
 /* Apply syntax highlighting colors */
