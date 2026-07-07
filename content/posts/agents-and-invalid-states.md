@@ -214,7 +214,7 @@ Current task: page discovery for section 'User Management'
 
 When the agent has decided there are enough sections and pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
 
-And it's yet another chance to enforce programmatic guarantees:
+And it's yet another chance to enforce validations:
 
 ```
 $ wiki.py render-to-filesystem
