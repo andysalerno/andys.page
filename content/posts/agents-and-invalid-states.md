@@ -109,11 +109,11 @@ That's what I'll talk about now.
 
 *Glad you're finally getting to the point.*
 
-Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so I kindly ask you do not interrupt again.
+Please don't talk without raising your hand, and also we're too deep into this blog post to shift the tone or introduce new narrative devices, so I kindly ask that you not interrupt again.
 
 ## Agent example (aka The Point)
 
-Consider the exact same problem described above: create a system that generates a technical Markdown wiki for a given codebase. (Again, like [DeepWiki.](https://deepwiki.com/))
+Consider the exact same problem described above: create a system that generates a technical Markdown wiki for a given codebase. (Again, like [DeepWiki](https://deepwiki.com/).)
 
 This time, imagine you're using an agentic harness like Claude Code, or Codex, or OpenClaw. What would you do?
 
@@ -123,7 +123,7 @@ And I encourage you to try this. Maybe it even works, if the codebase is small e
 
 But I've been down this path. You launch the agent. The resulting wiki is too short. You update the instructions, telling it to write more pages. You launch the agent. Now there are more pages, but each page is only two paragraphs. You update the instructions. You launch the agent. Now the wiki lacks Mermaid diagrams. You add to the instructions. You launch the agent. Now the Mermaid diagrams look good, but it's missing a section for a crucial library in your codebase. You start to wonder how this same model solved an Erdős problem.
 
-Okay, maybe it didn't work. But we didn't even try skills yet. Or subagents. Or MCP servers! Or [Ralph Wiggum](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)!
+Okay, maybe it didn't work. But we haven't even tried skills yet. Or subagents. Or MCP servers! Or [Ralph Wiggum](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md)!
 
 Sure, we can try all those things. But first I want you to think about the types of failures we are seeing:
 
@@ -144,7 +144,7 @@ But we can get pretty damn close!
 
 The pattern I have landed on is:
 
-**Do NOT allow the agent to interact with the system EXCEPT through a program that you control. This program strictly prohibits operations that would lead to invalid state, while providing timely tips that guide it toward correct behavior.**
+**Do NOT allow the agent to interact with the system EXCEPT through a program that you control. This program strictly prohibits operations that would lead to invalid state, while providing timely tips that guide the agent toward correct behavior.**
 
 *Um, what does that mean?*
 
@@ -156,7 +156,7 @@ Instead, we give the agent a CLI program, which is the *only* way it may interac
 $ wiki.py add-section "User Management"
 ```
 
-This updates (and creates, if necessary) a file `state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./state.yaml`, so each invocation resumes from the existing state and overwrites it with the new state.
+This updates (and creates, if necessary) a file `state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Each invocation of `wiki.py` automatically loads `./state.yaml`, resuming from the existing state and overwriting it with the new state.
 
 What's the output of this command?
 
@@ -213,7 +213,7 @@ Current task: page discovery for section 'User Management'
 - [ ] Page writing (pending)
 ```
 
-When the agent has decided there are enough sections, pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
+When the agent has decided there are enough sections and pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
 
 And it's yet another chance to enforce programmatic guarantees:
 
@@ -243,12 +243,12 @@ In the above, we explain things such as:
 - the existence of the `wiki.py` CLI tool, and its basic usage.
 - the recommended flow: first section discovery, then page discovery, then page filling.
 
-What we *don't* have to do is enumerate a massive section of rules and guidelines. The CLI tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
+What we *don't* have to do is enumerate a massive list of rules and guidelines. The CLI tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
 
 > *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a `state.yaml` file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
 
 ## Agents everywhere
 
-This pattern is really useful when you are forced to use an agent-first approach, when you'd really prefer a code-first approach. Sadly, I can foresee a world where access to a direct `/chat/completions` endpoint (or newfangled `/responses` or whatever) becomes less and less common, and instead we have no choice but to interact with agent-first harnesses. (Partly why I'm a big fan of self-hosted AI).
+This pattern is especially useful when you're forced to use an agent-first approach but would really prefer a code-first one. Sadly, I can foresee a world where access to a direct `/chat/completions` endpoint (or newfangled `/responses` or whatever) becomes less and less common, and instead we have no choice but to interact with agent-first harnesses. (Partly why I'm a big fan of self-hosted AI).
 
-If your only interface is a full-fledged agent, then your best bet is to strictly limit what actions it may take; your best option for that is to limit it to a single CLI program that you control and that programmatically prohibits actions that would lead to invalid state.
+If your only interface is a full-fledged agent, then your best bet is to strictly limit what actions it may take -- ideally to a single CLI program that you control and that programmatically prohibits actions that would lead to invalid state.
