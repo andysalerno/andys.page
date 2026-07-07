@@ -92,6 +92,8 @@ In each stage, the LLM gets read-only filesystem tools plus exactly one tool tha
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
 
+This is what we've called "programming" for the last ~80 years; it just so happens that one of our program's sub-routines calls out to a supercomputer in the cloud that knows how to, roughly speaking, "think".
+
 ## Flip the script
 
 Now, let's invert the control flow, and talk about the agentic approach, where **the LLM drives the code.**
