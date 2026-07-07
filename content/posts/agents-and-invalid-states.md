@@ -1,10 +1,10 @@
 ---
-title: "Make invalid states unrepresentable (for agents)"
+title: "Make invalid states unrepresentable (for your agents)"
 date: 2026-07-01T12:49:53-07:00
 draft: true
 ---
 
-*This blog post was written by me, a human (as evidenced by how long it takes to explain a simple idea). If you want to skip straight to the main idea I'm proposing, scroll to The Point.*
+*This blog post was written by me, a human (as evidenced by how long it takes to explain a simple idea). If you want to skip straight to the main idea, scroll to The Point.*
 
 There is an old saying: ***make invalid states unrepresentable***.
 
@@ -12,7 +12,7 @@ Like all maxims in computer science, [one could debate its usefulness](https://w
 
 Regardless, as a guiding principle, it is certainly *useful*. Entire classes of bugs can be eliminated from programs, just by designing your solution in a way that certain failure states are not merely edge cases but *logically impossible*.
 
-Lately I have noticed that this approach can also be applied to **agents**, massively increasing their reliability for many tasks. I will describe some examples below.
+Lately I have noticed that this approach is very effective when applied to **agents**, massively increasing their reliability for many tasks. I will detail the pattern below.
 
 First, some old-school code examples. Feel free to skip them if you already get the gist.
 
@@ -43,7 +43,7 @@ Apologies for the Agents 101. My audience surely is familiar with these concepts
 
 Say you wanted to auto-generate a technical wiki for any given codebase. Basically, implement [DeepWiki](https://deepwiki.com/). How would you do this?
 
-Well, first let's define what a "wiki" is. For our purposes, an example "wiki" might look like this:
+Well, first let's define what a "wiki" is. For our purposes, an example "wiki" created by our system might be a folder that looks like this:
 
 ```
 wiki/
@@ -63,7 +63,7 @@ wiki/
 
 - There's always a top-level `OVERVIEW.md` page which is a landing page for the entire wiki.
 - There are "sections" which are folders that group relevant wiki pages by logical systems or concepts (e.x. `user-management-service/`)
-- Each "section" also has an `OVERVIEW.md` which is the landing page for that section (basically an index).
+- Each "section" also has an `OVERVIEW.md` which is the landing page for that section.
 - Each "section" has "pages" which are are the markdown files that contain the wiki content.
 
 On top of that, let's say wiki generation is **configurable**. A config file for our wiki-generator system might look like this:
@@ -85,11 +85,12 @@ First, let's consider the pre-agentic approach, where **code drives the LLM.** T
 
 - You have a Python program that calls into an LLM.
 - The program parses the yaml config file.
-- It maintains an internal state representation of the wiki, basically a data model representing the filesystem layout shown above.
+- As it runs, it maintains an internal state representation of the wiki, basically a data model representing the filesystem layout shown above.
 - In this internal state, it pre-populates any `default_sections` from the config, so they already exist before we even touch an LLM.
-- The code proceeds through multiple stages. First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic read-only filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which adds a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined by the LLM.
-- In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to discover relevant **pages** for that section (just the title and description, no wiki content). Same approach as before: we give it read-only filesystem tools, and a tool like "add_page" which, when invoked, triggers the code to update its internal state to add a new page.
-- Then, it loops over each empty page, and for each one, asks the LLM to write the wiki page content (tool "append_to_page").
+- The code proceeds through multiple stages, in a breadth-first manner; first creating empty sections, then filling the sections with empty pages, then actually filling the pages with wiki content. In detail:
+  -  First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic read-only filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which triggers our code to add a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined by the LLM.
+  - In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to browse the codebase and discover relevant **pages** for that section (just the title and description, no wiki content). Same approach as before: we give it read-only filesystem tools, and a tool like "add_page" which, when invoked, triggers the code to update its internal state to add a new empty page.
+  -  Then, it loops over each empty page, and for each one, asks the LLM to write the wiki **page content** (tool "append_to_page").
 - Finally, when the above is complete, the code renders the internal state to the filesystem. This is when it actually creates the directories ("sections") and markdown files ("pages").
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
@@ -131,7 +132,7 @@ Sure, we can try all those things. But first I want you to think about the types
 - Not enough sections.
 - Broken links.
 - Areas of the codebase not covered by the wiki.
-- Config values ignored (`max_sections`, `max_pages_per_section`, from the previous example).
+- Config-file values ignored (`max_sections`, `max_pages_per_section`, from the previous example).
 
 Notice something? These types of failures are *entirely preventable by code.* In the earlier code-first example, we'll never exceed `max_sections` because the code breaks early when `max_sections` is reached. We'll never have a page that's too short, because the code loops until pages meet the minimum length. We can statically validate links to make sure they are not broken. We can map wiki sections to the areas of the codebase they cover, and guarantee that all parts of the codebase have wiki coverage. Etc, etc.
 
@@ -143,7 +144,7 @@ But we can get pretty damn close!
 
 The pattern I have landed on is:
 
-**Do NOT allow the agent to interact with the system EXCEPT through a program that you control. This program strictly prohibits operations that would lead to invalid state.**
+**Do NOT allow the agent to interact with the system EXCEPT through a program that you control. This program strictly prohibits operations that would lead to invalid state, while providing timely tips that guide it toward correct behavior.**
 
 *Um, what does that mean?*
 
@@ -155,7 +156,7 @@ Instead, we give the agent a cli program, which is the *only* way it may interac
 $ wiki.py add-section "User Management"
 ```
 
-This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./wiki_state.yaml`, so it may be used incrementally.
+This updates (and creates, if necessary) a file `wiki_state.yaml` that represents the state of the wiki. Just like in the earlier code-first solution! In fact, the data model can even be exactly the same. Invocations of `wiki.py` will automatically resume from `./wiki_state.yaml`, so each invocation resumes from the existing state and overwrites it with the new state.
 
 What's the output of this command?
 
@@ -181,6 +182,7 @@ Use this script while you are writing, or updating, a codebase wiki.
 Add sections first, then pages, then page content.
 Use render-to-filesystem when ready to persist to markdown files in the wiki directory layout.
 All operations update (or create) a file wiki_state.yaml.
+Check `wiki.py status` when unsure what to do next.
 
 USAGE
     wiki.py add-section SECTION_NAME
@@ -244,3 +246,9 @@ In the above, we explain things such as:
 What we *don't* have to do is enumerate a massive section of rules and guidelines. The cli tool `wiki.py` will handle that for us, and will surface that information to the agent when it is most relevant. We may simply write: "`wiki.py` will guide you as you go, so follow its warnings, suggestions, and tips."
 
 > *At this point, certain [hyper-pedantic readers](https://news.ycombinator.com/) might take issue: "You're not really making invalid states **unrepresentable**," they might (fairly) argue. "I could still manually craft a wiki.yaml state file that has more sections than `max_sections`. That's an invalid state, and I represented it. A better description is, you made invalid states **un-enterable**." To that I say: good point. But, 1) I think you could allow that the outcome is close enough to 'unrepresentable', especially considering where we started, and 2) that title is not nearly as catchy for a blog post.*
+
+## Agents everywhere
+
+This pattern is really useful when you are forced to use an agent-first approach, when you'd really prefer a code-first approach. Sadly, I can foresee a world where access to a direct `/chat/completions` endpoint (or newfangled `/responses` or whatever) becomes less and less common, and instead we have no choice but to interact with agent-first harnesses. (Partly why I'm a big fan of self-hosted AI).
+
+If your only interface is a full-fledged agent, then your best bet is to strictly limit what actions it may take; your best option for that is to limit it to a single CLI program that you control and that programmatically prohibits actions that would lead to invalid state.
