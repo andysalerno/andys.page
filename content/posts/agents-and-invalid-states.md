@@ -82,15 +82,17 @@ Basically, we may enforce some parameters (max sections, max pages per section) 
 
 First, let's consider the pre-agentic approach, where **code drives the LLM.** This is relatively straightforward. I can tell you from experience: eventually you will settle on a solution like this, using something like the OpenAI SDK or PydanticAI:
 
-You have a Python program. It parses the config and keeps the whole wiki in memory as a data model -- representing the tree you saw above -- pre-populating any `default_section`s before an LLM is ever involved. It then fills that model in three breadth-first stages:
+You have a Python program. It parses the config and keeps the whole wiki in memory as a data model -- representing the tree you saw above -- and pre-populating any `default_section`s before an LLM is ever involved. It then fills that model in three breadth-first stages:
 
 1. Discover wiki sections. Ask the LLM to explore the codebase and call an `add_section` tool as it goes. Loop until it finds no more, or we hit `max_sections`. (No pages or content added yet, just the empty sections.)
-1. Discover pages. For each section, ask the LLM to explore the codebase and discover pages -- title and description only -- and add them via an `add_page` tool.
-1. Fill the pages. For each page, ask the LLM to explore the codebase and fill in the page content via an `append_to_page` tool.
+1. Discover pages. Loop over each section, asking the LLM to explore the codebase and discover pages -- title and description only -- and add them via an `add_page` tool.
+1. Fill the pages. Loop over each page, asking the LLM to explore the codebase and fill in the page content via an `append_to_page` tool.
 
 In each stage, the LLM gets read-only filesystem tools plus exactly one tool that mutates the state. Finally, when all stages are complete, the code renders the internal state to disk as real folders and Markdown files.
 
-This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
+This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, our program will perform the same behavior: first discovering sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
+
+This is what we've called "programming" for the last ~80 years; it just so happens that one of our program's sub-routines calls out to a supercomputer in the cloud that knows how to, roughly speaking, "think".
 
 ## Flip the script
 
@@ -100,7 +102,7 @@ In this approach--hold on. I see a hand raised. Yes?
 
 *Um, hi. If the above approach works, why even bother with the agentic approach?*
 
-Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge.
+Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge (after all, [they're not perfect!](https://theshamblog.com/an-ai-agent-published-a-hit-piece-on-me/)).
 
 That's what I'll talk about now.
 
@@ -212,7 +214,7 @@ Current task: page discovery for section 'User Management'
 
 When the agent has decided there are enough sections and pages, and the content is good, it may invoke `wiki.py render-to-filesystem`. This takes the `state.yaml` intermediate representation, and actually renders it to the filesystem as markdown files (following the filesystem layout shown earlier).
 
-And it's yet another chance to enforce programmatic guarantees:
+And it's yet another chance to enforce validations:
 
 ```
 $ wiki.py render-to-filesystem
