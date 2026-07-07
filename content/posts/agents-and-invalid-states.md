@@ -81,17 +81,15 @@ default_sections:
 
 Basically, we may enforce some parameters (max sections, max pages per section) and allow certain sections to be user-defined such that the generated wiki will always include them (not leaving it up to the LLM to decide).
 
-First, let's consider the pre-agentic approach, where **code drives the LLM.** This is relatively straightforward. I can tell you from experience: eventually you will settle on a solution like the following, using something like the OpenAI SDK or PydanticAI:
+First, let's consider the pre-agentic approach, where **code drives the LLM.** This is relatively straightforward. I can tell you from experience: eventually you will settle on a solution like this, using something like the OpenAI SDK or PydanticAI:
 
-- You have a Python program that calls into an LLM.
-- The program parses the yaml config file.
-- As it runs, it maintains an internal state representation of the wiki, basically a data model representing the filesystem layout shown above.
-- In this internal state, it pre-populates any `default_sections` from the config, so they already exist before we even touch an LLM.
-- The code proceeds through multiple stages, in a breadth-first manner; first creating empty sections, then filling the sections with empty pages, then actually filling the pages with wiki content. In detail:
-  -  First, it invokes the LLM, instructing it to read the target codebase and identify logical **sections**. We give it basic read-only filesystem tools ("file_read", etc) to handle this, plus a tool "add_section" which triggers our code to add a new empty section to the internal state. We loop until the LLM finds no additional sections, or we hit `max_sections`. To be clear: at this point there are no pages, no wiki content, only the high-level *structure* of the wiki (the empty sections) has been determined by the LLM.
-  - In the next stage, the code loops over the previously-discovered sections, and for each one, instructs the LLM to browse the codebase and discover relevant **pages** for that section (just the title and description, no wiki content). Same approach as before: we give it read-only filesystem tools, and a tool like "add_page" which, when invoked, triggers the code to update its internal state to add a new empty page.
-  -  Then, it loops over each empty page, and for each one, asks the LLM to write the wiki **page content** (tool "append_to_page").
-- Finally, when the above is complete, the code renders the internal state to the filesystem. This is when it actually creates the directories ("sections") and markdown files ("pages").
+You have a Python program. It parses the config and keeps the whole wiki in memory as a data model -- representing the tree you saw above -- pre-populating any `default_section`s before an LLM is ever involved. It then fills that model in three breadth-first stages:
+
+1. Discover wiki sections. Ask the LLM to explore the codebase and call an `add_section` tool as it goes. Loop until it finds no more, or we hit `max_sections`. (No pages or content added yet, just the empty sections.)
+1. Discover pages. For each section, ask the LLM to explore the codebase and discover pages -- title and description only -- and add them via an `add_page` tool.
+1. Fill the pages. For each page, ask the LLM to explore the codebase and fill in the page content via an `append_to_page` tool.
+
+In each stage, the LLM gets read-only filesystem tools plus exactly one tool that mutates the state. Finally, when all stages are complete, the code renders the internal state to disk as real folders and Markdown files.
 
 This approach works. It takes time to refine the prompts, to adequately express to the LLM what makes a good "section" and a good "page" and how to do things like link between pages, write Mermaid diagrams, etc. But it works. And we know that every time we run it, the same thing will happen: first we'll discover sections, then pages, then fill in the pages. Because that's not a decision made by the LLM; rather, it's a decision we made as the programmers when we wrote the program. The code is driving the LLM.
 
