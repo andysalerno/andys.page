@@ -102,7 +102,7 @@ In this approach--hold on. I see a hand raised. Yes?
 
 *Um, hi. If the above approach works, why even bother with the agentic approach?*
 
-Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge.
+Excellent question, glad you asked. The code-first approach certainly works, and will keep working. That said, the world is gradually converging on a new paradigm, where agents orchestrate themselves, unbound by programmatic control flow. It's therefore worthwhile to consider how we may still keep the strict guarantees afforded to us by code (schema validations, reproducibility, determinism, etc) even when the agent is in charge (after all, [they're not perfect!](https://theshamblog.com/an-ai-agent-published-a-hit-piece-on-me/)).
 
 That's what I'll talk about now.
 
